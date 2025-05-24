@@ -3,15 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <title>Busca de Mobs - Lineage 2</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
+    <header>
+        <img src="https://seeklogo.com/images/L/lineage-ii-logo-110AD63497-seeklogo.com.png" alt="Lineage 2 Logo" class="logo">
         <h1>BUSCA DE MOBS</h1>
+    </header>
+
+    <main class="container">
+        <p class="subtitle">Pesquise informações sobre monstros do universo Lineage 2</p>
         <input type="text" id="searchInput" placeholder="Digite o nome do mob..." />
-        <button onclick="buscarMob()">Pesquisar</button>
+        <button onclick="buscarMob()">🔍 Pesquisar</button>
         <div id="resultado"></div>
-    </div>
+    </main>
+
+    <footer>
+        <p>Desenvolvido por Kronah © 2025</p>
+    </footer>
+
     <script src="script.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(reg => console.log('Service Worker registrado!', reg))
+          .catch(err => console.warn('Erro ao registrar Service Worker:', err));
+      }
+    </script>
 </body>
 </html>
