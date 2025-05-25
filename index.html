@@ -12,6 +12,18 @@
         <p>Carregando informações...</p>
     </div>
 
+    <div id="login-screen" style="display: none;">
+        <header>
+            <h1>🔑 AUTENTICAÇÃO</h1>
+        </header>
+        <main class="container">
+            <p class="subtitle">Digite o token de acesso:</p>
+            <input type="text" id="tokenInput" placeholder="Token..." />
+            <button onclick="verificarToken()">✔ Entrar</button>
+            <p id="loginMessage" style="color: red; margin-top: 10px;"></p>
+        </main>
+    </div>
+
     <div id="main-content" style="display: none;">
         <header>
             <img src="https://seeklogo.com/images/L/lineage-ii-logo-110AD63497-seeklogo.com.png" alt="Lineage 2 Logo" class="logo">
@@ -34,7 +46,7 @@
     <script>
       window.addEventListener('load', function() {
           document.getElementById('loader').style.display = 'none';
-          document.getElementById('main-content').style.display = 'block';
+          document.getElementById('login-screen').style.display = 'block';
       });
 
       if ('serviceWorker' in navigator) {
