@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Busca de Mobs - Lineage 2 (com Token)</title>
+    <title>Busca de BOSS - Lineage 2 Divolion (com Token)</title>
     <link rel="stylesheet" href="style.css">
     <style>
         body { background-color: #f0f0f0; font-family: Arial, sans-serif; padding: 20px; }
@@ -22,7 +22,7 @@
 </div>
 
 <div class="container hidden" id="appSection">
-    <h1>🔍 Busca de Mobs</h1>
+    <h1>🔍 Busca de Boss</h1>
     <input type="text" id="searchInput" placeholder="Digite o nome do mob..." />
     <button onclick="buscarMob()">Pesquisar</button>
     <div id="resultado"></div>
@@ -95,7 +95,7 @@
             for (let mob of dados) {
                 if (mob["Nome do Mob"].toLowerCase().includes(termo)) {
                     resultados.push(
-                        `<strong>${mob["Nome do Mob"]}</strong><br>Número: ${mob["Número"]}<br>Arquivo: ${mob["Arquivo"]}<br><br>`
+                        `<strong>${mob["Nome do Boss"]}</strong><br>Número: ${mob["Número"]}<br>Boss: ${mob["Arquivo"]}<br><br>`
                     );
                 }
             }
@@ -103,7 +103,7 @@
             document.getElementById("resultado").innerHTML =
                 resultados.length > 0
                     ? resultados.join("")
-                    : "Nenhum mob encontrado.";
+                    : "Nenhum Boss encontrado.";
         } catch (e) {
             document.getElementById("resultado").innerHTML = "Erro ao carregar os dados online.";
             console.error(e);
