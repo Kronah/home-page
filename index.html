@@ -1,10 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Busca de Mobs - Lineage 2</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        /* Ajustes rápidos para visual */
+        body { font-family: Arial, sans-serif; background: #f0f0f0; }
+        .container { max-width: 400px; margin: 2rem auto; padding: 1rem; background: white; border-radius: 8px; }
+        input[type=text] { width: 100%; padding: 8px; margin: 10px 0; font-size: 1rem; }
+        button { padding: 10px 20px; font-size: 1rem; cursor: pointer; }
+        .logo { max-height: 60px; }
+    </style>
 </head>
 <body>
     <div id="loader">
@@ -26,7 +34,7 @@
 
     <div id="main-content" style="display: none;">
         <header>
-            <img src="https://seeklogo.com/images/L/lineage-ii-logo-110AD63497-seeklogo.com.png" alt="Lineage 2 Logo" class="logo">
+            <img src="https://seeklogo.com/images/L/lineage-ii-logo-110AD63497-seeklogo.com.png" alt="Lineage 2 Logo" class="logo" />
             <h1>BUSCA DE MOBS</h1>
         </header>
 
@@ -42,18 +50,83 @@
         </footer>
     </div>
 
-    <script src="script.js"></script>
-    <script>
-      window.addEventListener('load', function() {
-          document.getElementById('loader').style.display = 'none';
-          document.getElementById('login-screen').style.display = 'block';
-      });
+<script>
+    window.addEventListener('load', function () {
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('login-screen').style.display = 'block';
+    });
 
-      if ('serviceWorker' in navigator) {
+    const FIREBASE_URL = "https://bossdv-72d16-default-rtdb.firebaseio.com/tokens";
+
+    async function verificarToken() {
+        const tokenInput = document.getElementById('tokenInput').value.trim();
+        const loginMessage = document.getElementById('loginMessage');
+        loginMessage.style.color = 'red';
+        loginMessage.textContent = '';
+
+        if (!tokenInput) {
+            loginMessage.textContent = 'Por favor, insira o token.';
+            return;
+        }
+
+        try {
+            // Consulta no Firebase REST (token é a chave)
+            const response = await fetch(`${FIREBASE_URL}/${tokenInput}.json`);
+            if (!response.ok) {
+                throw new Error('Erro ao consultar token.');
+            }
+
+            const tokenData = await response.json();
+
+            if (!tokenData) {
+                loginMessage.textContent = 'Token inválido.';
+                return;
+            }
+
+            if (!tokenData.valid) {
+                loginMessage.textContent = 'Token inválido ou expirado.';
+                return;
+            }
+
+            // Verificar data de expiração
+            const hoje = new Date();
+            const expireDate = new Date(tokenData.expire_at + 'T23:59:59'); // fim do dia
+
+            if (hoje > expireDate) {
+                loginMessage.textContent = 'Token expirado.';
+                return;
+            }
+
+            // Token válido! Pode salvar o device_id, nome, etc., aqui se quiser
+
+            // Mostrar tela principal e esconder login
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+
+        } catch (error) {
+            loginMessage.textContent = 'Erro na verificação do token. Tente novamente.';
+            console.error(error);
+        }
+    }
+
+    // Exemplo de função dummy para buscar mob (você pode substituir)
+    function buscarMob() {
+        const searchInput = document.getElementById('searchInput').value.trim();
+        const resultado = document.getElementById('resultado');
+        if (!searchInput) {
+            resultado.textContent = 'Digite o nome do mob para pesquisar.';
+            return;
+        }
+        resultado.textContent = `Buscando informações para o mob: "${searchInput}"... (função ainda não implementada)`;
+    }
+
+    // Service Worker (opcional)
+    if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('service-worker.js')
-          .then(reg => console.log('Service Worker registrado!', reg))
-          .catch(err => console.warn('Erro ao registrar Service Worker:', err));
-      }
-    </script>
+            .then(reg => console.log('Service Worker registrado!', reg))
+            .catch(err => console.warn('Erro ao registrar Service Worker:', err));
+    }
+</script>
+
 </body>
 </html>
