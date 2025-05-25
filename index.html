@@ -58,6 +58,24 @@
 
     const FIREBASE_URL = "https://bossdv-72d16-default-rtdb.firebaseio.com/tokens";
 
+    // Função para gerar UUID simples
+    function gerarUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
+    // Pega device_id do localStorage ou cria um novo
+    function getDeviceId() {
+        let deviceId = localStorage.getItem('device_id');
+        if (!deviceId) {
+            deviceId = gerarUUID();
+            localStorage.setItem('device_id', deviceId);
+        }
+        return deviceId;
+    }
+
     async function verificarToken() {
         const tokenInput = document.getElementById('tokenInput').value.trim();
         const loginMessage = document.getElementById('loginMessage');
@@ -70,7 +88,7 @@
         }
 
         try {
-            // Consulta no Firebase REST (token é a chave)
+            // Consulta token no Firebase
             const response = await fetch(`${FIREBASE_URL}/${tokenInput}.json`);
             if (!response.ok) {
                 throw new Error('Erro ao consultar token.');
@@ -88,18 +106,30 @@
                 return;
             }
 
-            // Verificar data de expiração
+            // Verifica expiração
             const hoje = new Date();
-            const expireDate = new Date(tokenData.expire_at + 'T23:59:59'); // fim do dia
-
+            const expireDate = new Date(tokenData.expire_at + 'T23:59:59');
             if (hoje > expireDate) {
                 loginMessage.textContent = 'Token expirado.';
                 return;
             }
 
-            // Token válido! Pode salvar o device_id, nome, etc., aqui se quiser
+            // Obtém device_id local
+            const deviceId = getDeviceId();
 
-            // Mostrar tela principal e esconder login
+            // Atualiza device_id no Firebase (PATCH)
+            const patchResponse = await fetch(`${FIREBASE_URL}/${tokenInput}.json`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ device_id: deviceId })
+            });
+
+            if (!patchResponse.ok) {
+                loginMessage.textContent = 'Erro ao atualizar device ID.';
+                return;
+            }
+
+            // Login OK - exibir conteúdo
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
 
@@ -109,7 +139,7 @@
         }
     }
 
-    // Exemplo de função dummy para buscar mob (você pode substituir)
+    // Exemplo de função dummy para buscar mob
     function buscarMob() {
         const searchInput = document.getElementById('searchInput').value.trim();
         const resultado = document.getElementById('resultado');
@@ -120,13 +150,14 @@
         resultado.textContent = `Buscando informações para o mob: "${searchInput}"... (função ainda não implementada)`;
     }
 
-    // Service Worker (opcional)
+    // Service Worker opcional
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('service-worker.js')
             .then(reg => console.log('Service Worker registrado!', reg))
             .catch(err => console.warn('Erro ao registrar Service Worker:', err));
     }
 </script>
+
 
 </body>
 </html>
