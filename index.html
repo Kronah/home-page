@@ -1,281 +1,47 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Busca de Boss - Lineage 2 Divolion</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    body {
-      background: #121212;
-      color: #eee;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 10px;
-    }
-    #loader {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-top: 50px;
-      color: #888;
-      font-weight: 600;
-    }
-    .spinner {
-      border: 4px solid #333;
-      border-top: 4px solid #4caf50;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin-bottom: 15px;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    #main-content {
-      background: #1e1e1e;
-      border-radius: 12px;
-      padding: 20px 25px;
-      max-width: 420px;
-      width: 100%;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.7);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    header {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 15px;
-    }
-    .logo {
-      width: 120px;
-      height: auto;
-      margin-bottom: 8px;
-      filter: drop-shadow(0 0 3px #4caf50);
-    }
-    h1 {
-      font-size: 1.8rem;
-      color: #4caf50;
-      letter-spacing: 2px;
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-    .subtitle {
-      font-size: 1rem;
-      color: #bbb;
-      text-align: center;
-      margin-bottom: 15px;
-      padding: 0 10px;
-    }
-    .container {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    input[type="text"] {
-      padding: 12px 15px;
-      font-size: 1rem;
-      border-radius: 8px;
-      border: none;
-      outline: none;
-      box-shadow: inset 0 0 6px #2a2a2a;
-      background: #292929;
-      color: #eee;
-      transition: box-shadow 0.3s ease;
-    }
-    input[type="text"]:focus {
-      box-shadow: 0 0 8px #4caf50;
-      background: #222;
-    }
-    button {
-      background: #4caf50;
-      color: #121212;
-      font-weight: 700;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 1.1rem;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-      transition: background-color 0.3s ease;
-      user-select: none;
-    }
-    button:hover {
-      background: #43a047;
-    }
-    button:active {
-      background: #388e3c;
-    }
-    #resultado {
-      margin-top: 20px;
-      min-height: 60px;
-      color: #ddd;
-      font-size: 1rem;
-      text-align: center;
-    }
-    footer {
-      margin-top: 30px;
-      font-size: 0.9rem;
-      color: #555;
-      text-align: center;
-      width: 100%;
-      user-select: none;
-    }
-    @media (max-width: 400px) {
-      #main-content {
-        padding: 15px 15px;
-      }
-      h1 {
-        font-size: 1.5rem;
-      }
-      button {
-        font-size: 1rem;
-        padding: 10px;
-      }
-      input[type="text"] {
-        font-size: 0.95rem;
-        padding: 10px;
-      }
-    }
-    .hidden {
-      display: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Busca de Mobs - Lineage 2</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-  <div id="loader">
-    <div class="spinner"></div>
-    <p>Carregando informações...</p>
-  </div>
+    <div id="loader">
+        <div class="spinner"></div>
+        <p>Carregando informações...</p>
+    </div>
 
-  <div id="main-content" style="display: none;">
-    <header>
-      <img src="https://kr.ncsoft.com/_resource/whatWeCreate/img/logo/lineage2.png" alt="Lineage 2 Logo" class="logo">
-      <h1>BUSCA DE BOSS</h1>
-    </header>
+    <div id="main-content" style="display: none;">
+        <header>
+            <img src="https://seeklogo.com/images/L/lineage-ii-logo-110AD63497-seeklogo.com.png" alt="Lineage 2 Logo" class="logo">
+            <h1>BUSCA DE MOBS</h1>
+        </header>
 
-    <main class="container" id="tokenSection">
-      <p class="subtitle">Digite seu token para acessar</p>
-      <input type="text" id="tokenInput" placeholder="Token de acesso" />
-      <button onclick="validarToken()">✅ Validar Token</button>
-      <div id="tokenMsg"></div>
-    </main>
+        <main class="container">
+            <p class="subtitle">Pesquise informações sobre monstros do universo Lineage 2</p>
+            <input type="text" id="searchInput" placeholder="Digite o nome do mob..." />
+            <button onclick="buscarMob()">🔍 Pesquisar</button>
+            <div id="resultado"></div>
+        </main>
 
-    <main class="container hidden" id="appSection">
-      <p class="subtitle">Pesquise as localizações dos Bosses no Lineage 2 Divolion</p>
-      <input type="text" id="searchInput" placeholder="Digite o nome do boss..." />
-      <button onclick="buscarMob()">🔍 Pesquisar</button>
-      <div id="resultado"></div>
-    </main>
+        <footer>
+            <p>Desenvolvido por Kronah © 2025</p>
+        </footer>
+    </div>
 
-    <footer>
-      <p>Desenvolvido por Kronah © 2025</p>
-    </footer>
-  </div>
+    <script src="script.js"></script>
+    <script>
+      window.addEventListener('load', function() {
+          document.getElementById('loader').style.display = 'none';
+          document.getElementById('main-content').style.display = 'block';
+      });
 
-  <script>
-    const firebaseBase = "https://bossdv-72d16-default-rtdb.firebaseio.com/tokens/";
-    let deviceId = localStorage.getItem("device_id");
-
-    if (!deviceId) {
-        deviceId = crypto.randomUUID();
-        localStorage.setItem("device_id", deviceId);
-    }
-
-    async function validarToken() {
-        const token = document.getElementById("tokenInput").value.trim();
-        if (!token) {
-            document.getElementById("tokenMsg").innerText = "Por favor, insira um token.";
-            return;
-        }
-
-        try {
-            const res = await fetch(`${firebaseBase}${token}.json`);
-            const data = await res.json();
-
-            if (!data) {
-                document.getElementById("tokenMsg").innerText = "Token inválido.";
-                return;
-            }
-
-            if (!data.valid) {
-                document.getElementById("tokenMsg").innerText = "Token não está ativo.";
-                return;
-            }
-
-            const hoje = new Date().toISOString().split('T')[0];
-            if (data.expire_at < hoje) {
-                document.getElementById("tokenMsg").innerText = "Token expirado.";
-                return;
-            }
-
-            if (!data.device_id || data.device_id === "") {
-                await fetch(`${firebaseBase}${token}/device_id.json`, {
-                    method: "PUT",
-                    body: JSON.stringify(deviceId)
-                });
-            } else if (data.device_id !== deviceId) {
-                document.getElementById("tokenMsg").innerText = "Este token já foi usado em outro dispositivo.";
-                return;
-            }
-
-            document.getElementById("tokenSection").classList.add("hidden");
-            document.getElementById("appSection").classList.remove("hidden");
-
-        } catch (err) {
-            console.error(err);
-            document.getElementById("tokenMsg").innerText = "Erro ao validar o token.";
-        }
-    }
-
-    async function buscarMob() {
-        const termo = document.getElementById("searchInput").value.toLowerCase();
-        let resultados = [];
-
-        try {
-            const resposta = await fetch("https://raw.githubusercontent.com/Kronah/mob-data/refs/heads/main/dados.json");
-            const dados = await resposta.json();
-
-            for (let mob of dados) {
-                if (mob["Nome do Mob"].toLowerCase().includes(termo)) {
-                    resultados.push(
-                        `<strong>${mob["Nome do Mob"]}</strong><br>Número: ${mob["Número"]}<br>Arquivo: ${mob["Arquivo"]}<br><br>`
-                    );
-                }
-            }
-
-            document.getElementById("resultado").innerHTML =
-                resultados.length > 0
-                    ? resultados.join("")
-                    : "Nenhum mob encontrado.";
-        } catch (e) {
-            document.getElementById("resultado").innerHTML = "Erro ao carregar os dados online.";
-            console.error(e);
-        }
-    }
-
-    window.addEventListener('load', function() {
-        document.getElementById('loader').style.display = 'none';
-        document.getElementById('main-content').style.display = 'block';
-    });
-  </script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(reg => console.log('Service Worker registrado!', reg))
+          .catch(err => console.warn('Erro ao registrar Service Worker:', err));
+      }
+    </script>
 </body>
 </html>

@@ -1,9 +1,9 @@
-const CACHE_NAME = 'v1-l2-mobs-cache';
+const CACHE_NAME = 'v2-l2-mobs-cache';
 const FILES_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/style.css',
-  '/script.js'
+  '/home-page/',
+  '/home-page/index.html',
+  '/home-page/style.css',
+  '/home-page/script.js'
 ];
 
 self.addEventListener('install', event => {
