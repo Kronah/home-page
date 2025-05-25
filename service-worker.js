@@ -1,4 +1,4 @@
-const CACHE_NAME = 'v2-l2-mobs-cache';
+const CACHE_NAME = 'v3-l2-mobs-cache';
 const FILES_TO_CACHE = [
   '/home-page/',
   '/home-page/index.html',
