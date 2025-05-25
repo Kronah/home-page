@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Busca de Mobs - Lineage 2 (com Token)</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { background-color: #f0f0f0; font-family: Arial, sans-serif; padding: 20px; }
+        .hidden { display: none; }
+        .container { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+        input, button { padding: 10px; width: 100%; margin-top: 10px; }
+        #resultado { margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="tokenSection">
+    <h2>🔐 Digite seu Token</h2>
+    <input type="text" id="tokenInput" placeholder="Insira o token" />
+    <button onclick="validarToken()">Validar Token</button>
+    <p id="tokenMsg"></p>
+</div>
+
+<div class="container hidden" id="appSection">
+    <h1>🔍 Busca de Mobs</h1>
+    <input type="text" id="searchInput" placeholder="Digite o nome do mob..." />
+    <button onclick="buscarMob()">Pesquisar</button>
+    <div id="resultado"></div>
+</div>
+
+<script>
+    const firebaseBase = "https://bossdv-72d16-default-rtdb.firebaseio.com/tokens/";
+    let deviceId = localStorage.getItem("device_id");
+
+    if (!deviceId) {
+        deviceId = crypto.randomUUID();
+        localStorage.setItem("device_id", deviceId);
+    }
+
+    async function validarToken() {
+        const token = document.getElementById("tokenInput").value.trim();
+        if (!token) {
+            document.getElementById("tokenMsg").innerText = "Por favor, insira um token.";
+            return;
+        }
+
+        try {
+            const res = await fetch(`${firebaseBase}${token}.json`);
+            const data = await res.json();
+
+            if (!data) {
+                document.getElementById("tokenMsg").innerText = "Token inválido.";
+                return;
+            }
+
+            if (!data.valid) {
+                document.getElementById("tokenMsg").innerText = "Token não está ativo.";
+                return;
+            }
+
+            const hoje = new Date().toISOString().split('T')[0];
+            if (data.expire_at < hoje) {
+                document.getElementById("tokenMsg").innerText = "Token expirado.";
+                return;
+            }
+
+            if (!data.device_id || data.device_id === "") {
+                // Registrar o device_id no Firebase
+                await fetch(`${firebaseBase}${token}/device_id.json`, {
+                    method: "PUT",
+                    body: JSON.stringify(deviceId)
+                });
+            } else if (data.device_id !== deviceId) {
+                document.getElementById("tokenMsg").innerText = "Este token já foi usado em outro dispositivo.";
+                return;
+            }
+
+            document.getElementById("tokenSection").classList.add("hidden");
+            document.getElementById("appSection").classList.remove("hidden");
+
+        } catch (err) {
+            console.error(err);
+            document.getElementById("tokenMsg").innerText = "Erro ao validar o token.";
+        }
+    }
+
+    async function buscarMob() {
+        const termo = document.getElementById("searchInput").value.toLowerCase();
+        let resultados = [];
+
+        try {
+            const resposta = await fetch("https://raw.githubusercontent.com/Kronah/mob-data/refs/heads/main/dados.json");
+            const dados = await resposta.json();
+
+            for (let mob of dados) {
+                if (mob["Nome do Mob"].toLowerCase().includes(termo)) {
+                    resultados.push(
+                        `<strong>${mob["Nome do Mob"]}</strong><br>Número: ${mob["Número"]}<br>Arquivo: ${mob["Arquivo"]}<br><br>`
+                    );
+                }
+            }
+
+            document.getElementById("resultado").innerHTML =
+                resultados.length > 0
+                    ? resultados.join("")
+                    : "Nenhum mob encontrado.";
+        } catch (e) {
+            document.getElementById("resultado").innerHTML = "Erro ao carregar os dados online.";
+            console.error(e);
+        }
+    }
+</script>
+
+</body>
+</html>
