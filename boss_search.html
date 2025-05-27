@@ -3,15 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <title>Busca de Mobs - Lineage 2</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
+    <button id="openListButton" onclick="openSelectedMobsListPopup()">
+        <i class="fas fa-clipboard-list"></i> Minha Lista (<span id="selectedMobCount">0</span>)
+    </button>
+
     <div class="container">
         <h1>BUSCA DE MOBS</h1>
         <input type="text" id="searchInput" placeholder="Digite o nome do mob..." />
-        <button onclick="buscarMob()">Pesquisar</button>
+        <button onclick="buscarMob()"><i class="fas fa-search"></i> Pesquisar</button>
         <div id="resultado"></div>
     </div>
+
+    <div id="toast" style="visibility: hidden;"></div>
+
+    <div class="overlay" id="selectedMobsListOverlay">
+        <div class="popup" id="selectedMobsListPopup">
+            <h2>Minha Lista de Mobs</h2>
+            <div id="selectedMobsContent" class="popup-content">
+                <p class="no-items-message">Nenhum mob na sua lista ainda.</p>
+            </div>
+            <button onclick="closeSelectedMobsListPopup()"><i class="fas fa-times"></i> Fechar</button>
+        </div>
+    </div>
+
     <script src="script.js"></script>
     <script>
       if ('serviceWorker' in navigator) {
@@ -22,3 +40,5 @@
     </script>
 </body>
 </html>
+
+
