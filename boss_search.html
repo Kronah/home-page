@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <title>Pesquisa de Boss - BossDV</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --dark-bg: #1A1A2E;
+            --dark-card: #2C2C40;
+            --primary-green: #6BE570; /* Cor principal (verde) */
+            --accent-green: #4CAF50; /* Verde de destaque */
+            --text-light: #E0E0E0;
+            --text-muted: #A0A0A0;
+            --border-color: #444455;
+            --error-red: #D32F2F;
+            --success-green: #4CAF50;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #0F1121 100%);
+            color: var(--text-light);
+            font-family: 'Inter', sans-serif;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: var(--primary-green);
+            margin-bottom: 20px;
+            font-weight: 700;
+            font-size: 2.2em;
+            text-shadow: 0 0 10px rgba(107, 229, 112, 0.3);
+        }
+        label {
+            font-size: 1.05rem;
+            margin: 15px 0 5px 0;
+            font-weight: 400;
+            color: var(--text-muted);
+        }
+        input, button {
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            padding: 12px 18px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        input {
+            width: 280px;
+            background-color: var(--dark-card);
+            color: var(--text-light);
+            text-transform: uppercase;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 3px rgba(107, 229, 112, 0.3);
+        }
+        button {
+            background-color: var(--primary-green);
+            color: var(--dark-bg);
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(107, 229, 112, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        button:hover {
+            background-color: #5ac560;
+            box-shadow: 0 6px 20px rgba(107, 229, 112, 0.5);
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(107, 229, 112, 0.3);
+        }
+
+        #searchContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-top: 30px;
+            background: var(--dark-card);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            width: 90%;
+            max-width: 450px;
+        }
+
+        #searchResults {
+            margin-top: 30px;
+            background: var(--dark-card);
+            padding: 20px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 600px;
+            min-height: 100px; /* Altura mínima para resultados */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            text-align: left;
+            word-break: break-all;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        #searchResults h3 {
+            color: var(--primary-green);
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        #searchResults p {
+            margin: 5px 0;
+            color: var(--text-light);
+        }
+        #searchResults .no-results {
+            color: var(--text-muted);
+            text-align: center;
+            padding: 20px;
+        }
+
+        #logoutButton {
+            background-color: #f44336; /* Vermelho para o botão de sair */
+            color: white;
+            margin-top: 40px;
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
+        }
+        #logoutButton:hover {
+            background-color: #d32f2f;
+            box-shadow: 0 6px 20px rgba(244, 67, 54, 0.5);
+        }
+
+        #userInfo {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            background-color: var(--dark-card);
+            padding: 8px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        footer {
+            margin-top: auto;
+            padding-top: 20px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            user-select: none;
+        }
+
+        /* Toast styles (reutilizados do outro arquivo) */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: var(--dark-card);
+            color: var(--text-light);
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px 20px;
+            position: fixed;
+            z-index: 1001;
+            left: 50%;
+            bottom: 30px;
+            font-size: 0.95em;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            transition: all 0.3s ease;
+        }
+
+        #toast.show {
+            visibility: visible;
+            -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+
+        #toast.error {
+            background-color: var(--error-red);
+            box-shadow: 0 5px 15px rgba(211, 47, 47, 0.4);
+        }
+
+        #toast.success {
+            background-color: var(--success-green);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        #toast.info {
+            background-color: var(--accent-green);
+            box-shadow: 0 5px 15px rgba(107, 229, 112, 0.4);
+        }
+
+        @-webkit-keyframes fadein {
+            from {bottom: 0; opacity: 0;}
+            to {bottom: 30px; opacity: 1;}
+        }
+
+        @keyframes fadein {
+            from {bottom: 0; opacity: 0;}
+            to {bottom: 30px; opacity: 1;}
+        }
+
+        @-webkit-keyframes fadeout {
+            from {bottom: 30px; opacity: 1;}
+            to {bottom: 0; opacity: 0;}
+        }
+
+        @keyframes fadeout {
+            from {bottom: 30px; opacity: 1;}
+            to {bottom: 0; opacity: 0;}
+        }
+    </style>
+</head>
+<body>
+
+    <div id="userInfo">Carregando informações do usuário...</div>
+
+    <h1>Pesquisa de Boss - BossDV</h1>
+
+    <div id="searchContainer">
+        <label for="bossName">Nome do Boss:</label>
+        <input type="text" id="bossName" placeholder="Digite o nome do Boss" />
+        <button onclick="searchBoss()"><i class="fas fa-search"></i> Buscar Boss</button>
+    </div>
+
+    <div id="searchResults">
+        <h3>Resultados da Pesquisa:</h3>
+        <p class="no-results">Nenhum resultado para exibir ainda. Digite um nome e clique em buscar.</p>
+    </div>
+
+    <button id="logoutButton" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
+
+    <footer>Desenvolvido por Kronah © 2025</footer>
+
+    <div id="toast" style="visibility: hidden;"></div>
+
+    <script>
+        // Função para mostrar toasts (copiada do seu outro arquivo)
+        function mostrarToast(mensagem, tipo = "success") {
+            const toast = document.getElementById("toast");
+            toast.className = "show";
+            toast.className = `show ${tipo}`;
+            toast.innerText = mensagem;
+
+            setTimeout(() => {
+                toast.className = toast.className.replace("show", "");
+            }, 3000);
+        }
+
+        // Função para simular a busca de Boss
+        async function searchBoss() {
+            const bossNameInput = document.getElementById('bossName');
+            const bossName = bossNameInput.value.trim();
+            const searchResultsDiv = document.getElementById('searchResults');
+            searchResultsDiv.innerHTML = '<h3>Resultados da Pesquisa:</h3>'; // Limpa resultados anteriores
+
+            if (!bossName) {
+                searchResultsDiv.innerHTML += '<p class="no-results">Por favor, digite um nome de Boss para buscar.</p>';
+                mostrarToast("Digite um nome de Boss.", "info");
+                return;
+            }
+
+            // Simulação de busca: Em um cenário real, você faria uma requisição a uma API aqui.
+            // Por exemplo: fetch(`https://sua-api.com/bosses?name=${encodeURIComponent(bossName)}`);
+            // Para este exemplo, vamos simular alguns resultados.
+            mostrarToast(`Buscando por "${bossName}"...`, "info");
+
+            // Simula um atraso de rede
+            await new Promise(resolve => setTimeout(resolve, 1500)); 
+
+            const mockBosses = [
+                { name: "Dragão Ancestral", location: "Montanhas Sombrias", weakness: "Gelo", drops: ["Escama Ancestral", "Coração Dracônico"] },
+                { name: "Rainha Aranha", location: "Floresta Amaldiçoada", weakness: "Fogo", drops: ["Seda Venenosa", "Olho de Aranha"] },
+                { name: "Golem de Pedra", location: "Ruínas Antigas", weakness: "Magia", drops: ["Fragmento de Golem", "Núcleo Energético"] }
+            ];
+
+            const foundBosses = mockBosses.filter(boss => 
+                boss.name.toUpperCase().includes(bossName.toUpperCase())
+            );
+
+            if (foundBosses.length > 0) {
+                foundBosses.forEach(boss => {
+                    searchResultsDiv.innerHTML += `
+                        <p><strong>Nome:</strong> ${boss.name}</p>
+                        <p><strong>Localização:</strong> ${boss.location}</p>
+                        <p><strong>Fraqueza:</strong> ${boss.weakness}</p>
+                        <p><strong>Drops:</strong> ${boss.drops.join(', ')}</p>
+                        <hr style="border-color: var(--border-color); margin: 10px 0;">
+                    `;
+                });
+                mostrarToast(`Encontrados ${foundBosses.length} Boss(es)!`, "success");
+            } else {
+                searchResultsDiv.innerHTML += '<p class="no-results">Nenhum Boss encontrado com esse nome.</p>';
+                mostrarToast("Nenhum Boss encontrado.", "error");
+            }
+        }
+
+        // Função para deslogar e limpar o localStorage
+        function logout() {
+            localStorage.removeItem('savedToken');
+            localStorage.removeItem('validatedUserName');
+            localStorage.removeItem('validatedTokenId');
+            localStorage.removeItem('validatedDeviceId');
+            localStorage.removeItem('localDeviceId'); // Limpa o ID do dispositivo também
+            window.location.href = "index.html"; // Redireciona de volta para a tela de validação
+        }
+
+        // Ao carregar a página, verifica se o usuário está logado
+        window.onload = () => {
+            const userName = localStorage.getItem('validatedUserName');
+            const tokenId = localStorage.getItem('validatedTokenId');
+            const deviceId = localStorage.getItem('validatedDeviceId');
+
+            const userInfoDiv = document.getElementById('userInfo');
+
+            if (userName && tokenId && deviceId) {
+                userInfoDiv.innerHTML = `Olá, <strong>${userName}</strong>!`;
+                // Opcional: Você pode exibir mais detalhes se quiser, como o token ou deviceId
+                // userInfoDiv.innerHTML += `<br>Token: ${tokenId.substring(0, 8)}...`;
+            } else {
+                // Se não há dados de validação, redireciona de volta para a página de validação
+                mostrarToast("Acesso não autorizado. Por favor, valide seu token.", "error");
+                setTimeout(() => {
+                    window.location.href = "index.html";
+                }, 1500); // Pequeno atraso antes de redirecionar
+            }
+        };
+    </script>
+
+</body>
+</html>
+
