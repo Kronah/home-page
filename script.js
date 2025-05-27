@@ -1,4 +1,4 @@
-const MOB_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/refs/heads/main/dados.json';
+const MOB_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/refs/heads/main/dados.json'; // URL do seu arquivo JSON no GitHub
 let allMobsData = []; // Variável para armazenar os dados dos mobs uma vez carregados
 
 // Função para mostrar toasts (adaptada para o seu contexto)
@@ -37,12 +37,14 @@ async function loadMobsData() {
         loadingSpinner.style.display = 'block'; 
     }
     console.log("Iniciando carregamento dos dados dos Mobs...");
+    console.log("Tentando carregar de:", MOB_DATA_URL); // Loga o URL que está sendo usado
 
     try {
         const response = await fetch(MOB_DATA_URL);
-        console.log("Resposta da requisição para data.json:", response);
+        console.log("Resposta da requisição para dados.json:", response); // Log atualizado
 
         if (!response.ok) {
+            // Se a resposta não for OK (ex: 404, 500), lança um erro
             throw new Error(`Erro HTTP ao carregar dados: ${response.status} ${response.statusText}`);
         }
         
