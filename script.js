@@ -172,8 +172,7 @@ function displaySelectedMobs() {
                 <p><strong>Nome:</strong> ${mob["Nome do Mob"] || 'N/A'}</p>
                 <p><strong>Número:</strong> ${mob["Número"] !== null ? mob["Número"] : 'N/A'}</p>
                 <p><strong>Pontos:</strong> ${mob["Pontos"] !== null ? mob["Pontos"] : 'N/A'}</p>
-                <p><strong>Arquivo:</strong> ${mob["Arquivo"] || 'N/A'}</p>
-            </div>
+                <p><strong>Boss:</strong> ${mob["Arquivo"] || 'N/A'}</p> </div>
             <button class="remove-button" onclick="removeMobFromList(${mob["Número"]})">
                 <i class="fas fa-minus"></i>
             </button>
@@ -232,8 +231,7 @@ async function buscarMob(initialTerm = null) {
                             <p><strong>Número:</strong> N/A</p>
                             <p><strong>Nome do Mob:</strong> ${mob["Nome do Mob"] || 'N/A'}</p>
                             <p><strong>Pontos:</strong> ${mob["Pontos"] !== null ? mob["Pontos"] : 'N/A'}</p>
-                            <p><strong>Arquivo:</strong> ${mob["Arquivo"] || 'N/A'}</p>
-                        </div>
+                            <p><strong>Boss:</strong> N/A</p> </div>
                         <div class="action-buttons">
                             </div>
                     </div>
@@ -256,8 +254,7 @@ async function buscarMob(initialTerm = null) {
                         <p><strong>Número:</strong> ${mob["Número"] !== null ? mob["Número"] : 'N/A'}</p>
                         <p><strong>Nome do Mob:</strong> ${mob["Nome do Mob"] || 'N/A'}</p>
                         <p><strong>Pontos:</strong> ${mob["Pontos"] !== null ? mob["Pontos"] : 'N/A'}</p>
-                        <p><strong>Arquivo:</strong> ${mob["Arquivo"] || 'N/A'}</p>
-                    </div>
+                        <p><strong>Boss:</strong> ${mob["Arquivo"] || 'N/A'}</p> </div>
                     <div class="action-buttons">
                         ${buttonHtml}
                     </div>
