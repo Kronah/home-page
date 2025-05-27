@@ -220,6 +220,22 @@
             from {bottom: 30px; opacity: 1;}
             to {bottom: 0; opacity: 0;}
         }
+        /* Loading spinner styles */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid var(--primary-green);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none; /* Hidden by default */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -236,6 +252,7 @@
 
     <div id="searchResults">
         <h3>Resultados da Pesquisa:</h3>
+        <div id="loadingSpinner" class="spinner"></div>
         <p class="no-results">Nenhum resultado para exibir ainda. Digite um nome e clique em buscar.</p>
     </div>
 
@@ -246,6 +263,9 @@
     <div id="toast" style="visibility: hidden;"></div>
 
     <script>
+        const MOB_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/main/data.json';
+        let allMobsData = []; // Variável para armazenar os dados dos mobs uma vez carregados
+
         // Função para mostrar toasts (copiada do seu outro arquivo)
         function mostrarToast(mensagem, tipo = "success") {
             const toast = document.getElementById("toast");
@@ -258,11 +278,38 @@
             }, 3000);
         }
 
-        // Função para simular a busca de Boss
+        // Função para carregar os dados dos mobs do GitHub
+        async function loadMobsData() {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const searchResultsDiv = document.getElementById('searchResults');
+            
+            loadingSpinner.style.display = 'block'; // Mostra o spinner
+            searchResultsDiv.innerHTML = '<h3>Resultados da Pesquisa:</h3><div id="loadingSpinner" class="spinner" style="display: block;"></div><p class="no-results">Carregando dados dos Bosses...</p>';
+
+            try {
+                const response = await fetch(MOB_DATA_URL);
+                if (!response.ok) {
+                    throw new Error(`Erro ao carregar dados: ${response.status} ${response.statusText}`);
+                }
+                allMobsData = await response.json();
+                mostrarToast("Dados dos Bosses carregados com sucesso!", "success");
+                searchResultsDiv.innerHTML = '<h3>Resultados da Pesquisa:</h3><p class="no-results">Nenhum resultado para exibir ainda. Digite um nome e clique em buscar.</p>';
+            } catch (error) {
+                console.error("Erro ao carregar dados dos mobs:", error);
+                mostrarToast(`Erro ao carregar dados: ${error.message}`, "error");
+                searchResultsDiv.innerHTML = '<h3>Resultados da Pesquisa:</h3><p class="no-results" style="color: var(--error-red);">Erro ao carregar dados dos Bosses. Tente novamente mais tarde.</p>';
+            } finally {
+                loadingSpinner.style.display = 'none'; // Esconde o spinner
+            }
+        }
+
+        // Função para buscar Bosses
         async function searchBoss() {
             const bossNameInput = document.getElementById('bossName');
             const bossName = bossNameInput.value.trim();
             const searchResultsDiv = document.getElementById('searchResults');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+
             searchResultsDiv.innerHTML = '<h3>Resultados da Pesquisa:</h3>'; // Limpa resultados anteriores
 
             if (!bossName) {
@@ -271,31 +318,32 @@
                 return;
             }
 
-            // Simulação de busca: Em um cenário real, você faria uma requisição a uma API aqui.
-            // Por exemplo: fetch(`https://sua-api.com/bosses?name=${encodeURIComponent(bossName)}`);
-            // Para este exemplo, vamos simular alguns resultados.
+            if (allMobsData.length === 0) {
+                searchResultsDiv.innerHTML += '<p class="no-results">Dados dos Bosses ainda não carregados. Por favor, aguarde ou tente recarregar a página.</p>';
+                mostrarToast("Dados não carregados. Aguarde.", "info");
+                return;
+            }
+
+            loadingSpinner.style.display = 'block'; // Mostra o spinner durante a busca
             mostrarToast(`Buscando por "${bossName}"...`, "info");
 
-            // Simula um atraso de rede
-            await new Promise(resolve => setTimeout(resolve, 1500)); 
-
-            const mockBosses = [
-                { name: "Dragão Ancestral", location: "Montanhas Sombrias", weakness: "Gelo", drops: ["Escama Ancestral", "Coração Dracônico"] },
-                { name: "Rainha Aranha", location: "Floresta Amaldiçoada", weakness: "Fogo", drops: ["Seda Venenosa", "Olho de Aranha"] },
-                { name: "Golem de Pedra", location: "Ruínas Antigas", weakness: "Magia", drops: ["Fragmento de Golem", "Núcleo Energético"] }
-            ];
-
-            const foundBosses = mockBosses.filter(boss => 
-                boss.name.toUpperCase().includes(bossName.toUpperCase())
+            // Filtra os mobs carregados
+            const foundBosses = allMobsData.filter(mob => 
+                mob["Nome do Mob"] && mob["Nome do Mob"].toUpperCase().includes(bossName.toUpperCase())
             );
+
+            // Simula um pequeno atraso para a experiência do usuário
+            await new Promise(resolve => setTimeout(resolve, 500)); 
+
+            loadingSpinner.style.display = 'none'; // Esconde o spinner após a busca
 
             if (foundBosses.length > 0) {
                 foundBosses.forEach(boss => {
                     searchResultsDiv.innerHTML += `
-                        <p><strong>Nome:</strong> ${boss.name}</p>
-                        <p><strong>Localização:</strong> ${boss.location}</p>
-                        <p><strong>Fraqueza:</strong> ${boss.weakness}</p>
-                        <p><strong>Drops:</strong> ${boss.drops.join(', ')}</p>
+                        <p><strong>Número:</strong> ${boss["Número"] || 'N/A'}</p>
+                        <p><strong>Nome do Mob:</strong> ${boss["Nome do Mob"] || 'N/A'}</p>
+                        <p><strong>Pontos:</strong> ${boss["Pontos"] !== null ? boss["Pontos"] : 'N/A'}</p>
+                        <p><strong>Arquivo:</strong> ${boss["Arquivo"] || 'N/A'}</p>
                         <hr style="border-color: var(--border-color); margin: 10px 0;">
                     `;
                 });
@@ -316,8 +364,8 @@
             window.location.href = "index.html"; // Redireciona de volta para a tela de validação
         }
 
-        // Ao carregar a página, verifica se o usuário está logado
-        window.onload = () => {
+        // Ao carregar a página, verifica se o usuário está logado e carrega os dados dos mobs
+        window.onload = async () => {
             const userName = localStorage.getItem('validatedUserName');
             const tokenId = localStorage.getItem('validatedTokenId');
             const deviceId = localStorage.getItem('validatedDeviceId');
@@ -326,18 +374,15 @@
 
             if (userName && tokenId && deviceId) {
                 userInfoDiv.innerHTML = `Olá, <strong>${userName}</strong>!`;
-                // Opcional: Você pode exibir mais detalhes se quiser, como o token ou deviceId
-                // userInfoDiv.innerHTML += `<br>Token: ${tokenId.substring(0, 8)}...`;
+                await loadMobsData(); // Carrega os dados dos mobs ao iniciar a página
             } else {
-                // Se não há dados de validação, redireciona de volta para a página de validação
                 mostrarToast("Acesso não autorizado. Por favor, valide seu token.", "error");
                 setTimeout(() => {
                     window.location.href = "index.html";
-                }, 1500); // Pequeno atraso antes de redirecionar
+                }, 1500);
             }
         };
     </script>
 
 </body>
 </html>
-
