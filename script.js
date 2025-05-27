@@ -1,4 +1,4 @@
-const MOB_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/main/data.json';
+const MOB_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/refs/heads/main/dados.json';
 let allMobsData = []; // Variável para armazenar os dados dos mobs uma vez carregados
 
 // Função para mostrar toasts (adaptada para o seu contexto)
