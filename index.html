@@ -1,126 +1,145 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Validar Token - BossDV</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body {
-      background: #121212;
-      color: #eee;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-    }
-    h1 {
-      color: #4caf50;
-      margin-bottom: 10px;
-    }
-    label, input, button {
-      font-size: 1rem;
-      margin: 8px 0;
-    }
-    input, button {
-      padding: 10px;
-      border-radius: 6px;
-      border: none;
-    }
-    input {
-      width: 250px;
-    }
-    button {
-      background-color: #4caf50;
-      color: #121212;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background-color 0.3s ease;
-    }
-    button:hover {
-      background-color: #43a047;
-    }
-    #output {
-      margin-top: 20px;
-      background: #222;
-      padding: 15px;
-      border-radius: 8px;
-      width: 100%;
-      max-width: 350px;
-      word-break: break-all;
-      font-family: monospace;
-    }
-    footer {
-      margin-top: auto;
-      font-size: 0.8rem;
-      color: #555;
-      user-select: none;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <title>Validar Token - BossDV</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      background: #121212;
+      color: #eee;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    h1 {
+      color: #4caf50;
+      margin-bottom: 10px;
+    }
+    label, input, button {
+      font-size: 1rem;
+      margin: 8px 0;
+    }
+    input, button {
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+    }
+    input {
+      width: 250px;
+    }
+    button {
+      background-color: #4caf50;
+      color: #121212;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #43a047;
+    }
+    #output {
+      margin-top: 20px;
+      background: #222;
+      padding: 15px;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 350px;
+      word-break: break-all;
+      font-family: monospace;
+    }
+    footer {
+      margin-top: auto;
+      font-size: 0.8rem;
+      color: #555;
+      user-select: none;
+    }
+  </style>
 </head>
 <body>
 
-  <h1>Validar Token - BossDV</h1>
+  <h1>Validar Token - BossDV</h1>
 
-  <label for="token">Digite o token:</label>
-  <input type="text" id="token" placeholder="ex: abc123-..."/>
+  <label for="token">Digite o token:</label>
+  <input type="text" id="token" placeholder="ex: abc123-..."/>
 
-  <button onclick="validarToken()">Validar Token</button>
+  <button onclick="validarToken()">Validar Token</button>
 
-  <div id="output"></div>
+  <div id="output"></div>
 
-  <footer>Desenvolvido por Kronah © 2025</footer>
+  <footer>Desenvolvido por Kronah © 2025</footer>
 
-  <script>
-    const firebaseBase = "https://bossdv-72d16-default-rtdb.firebaseio.com/tokens ";
+  <script>
+    // Corrigido: Removido o espaço extra no final da URL
+    const firebaseBase = "https://bossdv-72d16-default-rtdb.firebaseio.com/tokens"; 
 
-    function formatarData(data) {
-      return new Intl.DateTimeFormat('pt-BR').format(new Date(data));
-    }
+    function formatarData(data) {
+      return new Intl.DateTimeFormat('pt-BR').format(new Date(data));
+    }
 
-    async function validarToken() {
-      const token = document.getElementById('token').value.trim();
-      const output = document.getElementById('output');
+    async function validarToken() {
+      const token = document.getElementById('token').value.trim();
+      const output = document.getElementById('output');
 
-      if (!token) {
-        output.innerText = "Erro: Digite um token.";
-        return;
-      }
+      // Limpa a mensagem anterior
+      output.innerText = ""; 
 
-      try {
-        const url = `${firebaseBase}/${token}.json`;
-        const res = await fetch(url);
+      if (!token) {
+        output.innerText = "Erro: Digite um token.";
+        return;
+      }
 
-        if (!res.ok) {
-          throw new Error("Erro ao acessar o Firebase.");
-        }
+      try {
+        const url = `${firebaseBase}/${token}.json`;
+        const res = await fetch(url);
 
-        const data = await res.json();
+        if (!res.ok) {
+          throw new Error("Erro ao acessar o Firebase. Verifique sua conexão ou a URL.");
+        }
 
-        if (!data || !data.valid) {
-          output.innerText = "❌ Token inválido ou desativado.";
-          return;
-        }
+        const data = await res.json();
 
-        const hoje = new Date();
-        const expiraEm = new Date(data.expire_at);
-        if (hoje > expiraEm) {
-          output.innerText = "❌ Token expirado. Data de validade: " + formatarData(data.expire_at);
-          return;
-        }
+        if (!data || !data.valid) {
+          output.innerText = "❌ Token inválido ou desativado.";
+          return;
+        }
 
-        // Tudo ok!
-        output.innerHTML =
-          `✅ Acesso liberado!<br><br>` +
-          `Nome: ${data.nome}<br>` +
-          `Válido até: ${formatarData(data.expire_at)}<br>`;
-      } catch (e) {
-        console.error("Erro:", e);
-        output.innerText = "Erro ao validar token: " + e.message;
-      }
-    }
-  </script>
+        const hoje = new Date();
+        const expiraEm = new Date(data.expire_at);
+        if (hoje > expiraEm) {
+          output.innerText = "❌ Token expirado. Data de validade: " + formatarData(data.expire_at);
+          // Opcional: Você pode querer desativar o token no Firebase aqui se ele estiver expirado
+          // por exemplo: await fetch(`${url}`, { method: 'PATCH', body: JSON.stringify({ valid: false }) });
+          return;
+        }
+
+        // Tudo ok! Acesso liberado!
+        output.innerHTML =
+          `✅ Acesso liberado!<br><br>` +
+          `Nome: ${data.nome}<br>` +
+          `Válido até: ${formatarData(data.expire_at)}<br><br>` +
+          `Redirecionando para a tela de pesquisa...`;
+
+        // Armazena o nome e o ID do token no localStorage para a próxima tela
+        localStorage.setItem('validatedUserName', data.nome);
+        localStorage.setItem('validatedTokenId', token);
+
+
+        // Redireciona após 2 segundos (2000 milissegundos)
+        setTimeout(() => {
+          // Altere 'boss_search.html' para o caminho real da sua tela de pesquisa de Boss
+          window.location.href = "boss_search.html"; 
+        }, 2000); // Espera 2 segundos antes de redirecionar
+
+      } catch (e) {
+        console.error("Erro:", e);
+        output.innerText = "Erro ao validar token: " + e.message;
+      }
+    }
+  </script>
 
 </body>
 </html>
