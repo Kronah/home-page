@@ -1,4 +1,4 @@
-const MOB_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/refs/heads/main/dados.json';
+const MOB_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/refs/heads/main/dados.json'; // URL do seu arquivo JSON no GitHub
 let allMobsData = []; // Variável para armazenar os dados dos mobs uma vez carregados
 let selectedMobs = []; // Nova variável para armazenar os mobs selecionados
 
@@ -91,25 +91,40 @@ function updateSelectedMobCount() {
 }
 
 function isMobSelected(mobNumber) {
+    if (mobNumber === null || mobNumber === undefined) return false; // Garante que o número existe
     const selected = selectedMobs.some(mob => mob["Número"] === mobNumber);
-    // console.log(`Mob Number ${mobNumber} is selected: ${selected}`); // Log para depuração
     return selected;
 }
 
-function addMobToList(mob) {
-    if (!isMobSelected(mob["Número"])) {
-        selectedMobs.push(mob);
+// Alterado: agora recebe apenas o número do mob
+function addMobToList(mobNumber) {
+    if (mobNumber === null || mobNumber === undefined) {
+        mostrarToast("Erro: Mob sem número de identificação.", "error");
+        return;
+    }
+    const mobToAdd = allMobsData.find(mob => mob["Número"] === mobNumber);
+    if (!mobToAdd) {
+        mostrarToast("Erro: Mob não encontrado nos dados.", "error");
+        return;
+    }
+
+    if (!isMobSelected(mobNumber)) {
+        selectedMobs.push(mobToAdd);
         saveSelectedMobs();
-        mostrarToast(`"${mob["Nome do Mob"]}" adicionado à lista!`, "success");
+        mostrarToast(`"${mobToAdd["Nome do Mob"]}" adicionado à lista!`, "success");
         // Re-executa a busca para atualizar botões (necessário para mudar + para -)
         buscarMob(document.getElementById('searchInput').value.trim()); 
         displaySelectedMobs(); // Atualiza a lista no popup se estiver aberto
     } else {
-        mostrarToast(`"${mob["Nome do Mob"]}" já está na lista.`, "info");
+        mostrarToast(`"${mobToAdd["Nome do Mob"]}" já está na lista.`, "info");
     }
 }
 
 function removeMobFromList(mobNumber) {
+    if (mobNumber === null || mobNumber === undefined) {
+        mostrarToast("Erro: Mob sem número de identificação para remover.", "error");
+        return;
+    }
     const initialLength = selectedMobs.length;
     selectedMobs = selectedMobs.filter(mob => mob["Número"] !== mobNumber);
     if (selectedMobs.length < initialLength) {
@@ -153,7 +168,12 @@ function displaySelectedMobs() {
         const mobItem = document.createElement('div');
         mobItem.className = 'mob-item-list';
         mobItem.innerHTML = `
-            <span>${mob["Nome do Mob"] || 'N/A'}</span>
+            <div>
+                <p><strong>Nome:</strong> ${mob["Nome do Mob"] || 'N/A'}</p>
+                <p><strong>Número:</strong> ${mob["Número"] !== null ? mob["Número"] : 'N/A'}</p>
+                <p><strong>Pontos:</strong> ${mob["Pontos"] !== null ? mob["Pontos"] : 'N/A'}</p>
+                <p><strong>Arquivo:</strong> ${mob["Arquivo"] || 'N/A'}</p>
+            </div>
             <button class="remove-button" onclick="removeMobFromList(${mob["Número"]})">
                 <i class="fas fa-minus"></i>
             </button>
@@ -193,7 +213,7 @@ async function buscarMob(initialTerm = null) {
         mob["Nome do Mob"] && mob["Nome do Mob"].toLowerCase().includes(termo) 
     );
 
-    console.log("Found Mobs for term '" + termo + "':", foundMobs); // Log dos mobs encontrados
+    console.log("Found Mobs for term '" + termo + "':", foundMobs);
 
     await new Promise(resolve => setTimeout(resolve, 500)); 
 
@@ -203,13 +223,32 @@ async function buscarMob(initialTerm = null) {
 
     if (foundMobs.length > 0) {
         foundMobs.forEach(mob => {
-            const isSelected = isMobSelected(mob["Número"]);
-            console.log(`Processing mob: ${mob["Nome do Mob"]}, Number: ${mob["Número"]}, Is Selected: ${isSelected}`); // Log de depuração
+            // Verifica se o mob tem um número válido antes de tentar adicionar/remover
+            if (mob["Número"] === null || mob["Número"] === undefined) {
+                console.warn(`Mob "${mob["Nome do Mob"]}" não possui um "Número" válido. Botões de ação não serão exibidos.`);
+                resultado.innerHTML += `
+                    <div class="mob-result-item">
+                        <div>
+                            <p><strong>Número:</strong> N/A</p>
+                            <p><strong>Nome do Mob:</strong> ${mob["Nome do Mob"] || 'N/A'}</p>
+                            <p><strong>Pontos:</strong> ${mob["Pontos"] !== null ? mob["Pontos"] : 'N/A'}</p>
+                            <p><strong>Arquivo:</strong> ${mob["Arquivo"] || 'N/A'}</p>
+                        </div>
+                        <div class="action-buttons">
+                            </div>
+                    </div>
+                    <hr style="border-color: var(--border-color); margin: 10px 0;">
+                `;
+                return; // Pula para o próximo mob
+            }
 
-            // Gera o HTML do botão com base no status de seleção
+            const isSelected = isMobSelected(mob["Número"]);
+            console.log(`Processing mob: ${mob["Nome do Mob"]}, Number: ${mob["Número"]}, Is Selected: ${isSelected}`); 
+
+            // Alterado: Passando apenas o número do mob para as funções
             const buttonHtml = isSelected
                 ? `<button class="remove-button" onclick="removeMobFromList(${mob["Número"]})"><i class="fas fa-minus"></i></button>`
-                : `<button class="add-button" onclick="addMobToList(${JSON.stringify(mob).replace(/"/g, '&quot;')})"><i class="fas fa-plus"></i></button>`;
+                : `<button class="add-button" onclick="addMobToList(${mob["Número"]})"><i class="fas fa-plus"></i></button>`;
 
             const mobHtml = `
                 <div class="mob-result-item">
@@ -225,7 +264,7 @@ async function buscarMob(initialTerm = null) {
                 </div>
                 <hr style="border-color: var(--border-color); margin: 10px 0;">
             `;
-            console.log("Generated HTML for mob:", mobHtml); // Loga o HTML gerado para cada mob
+            console.log("Generated HTML for mob:", mobHtml); 
 
             resultado.innerHTML += mobHtml;
         });
