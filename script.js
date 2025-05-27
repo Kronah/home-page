@@ -1,10 +1,11 @@
-const MOB_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/refs/heads/main/dados.json'; // URL CORRIGIDO
+const MOB_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/refs/heads/main/dados.json';
 let allMobsData = []; // Variável para armazenar os dados dos mobs uma vez carregados
+let selectedMobs = []; // Nova variável para armazenar os mobs selecionados
 
-// Função para mostrar toasts (adaptada para o seu contexto)
+// Função para mostrar toasts
 function mostrarToast(mensagem, tipo = "success") {
     const toast = document.getElementById("toast");
-    if (toast) { 
+    if (toast) {
         toast.className = "show";
         toast.className = `show ${tipo}`;
         toast.innerText = mensagem;
@@ -25,16 +26,16 @@ function mostrarToast(mensagem, tipo = "success") {
 // Função para carregar os dados dos mobs do GitHub
 async function loadMobsData() {
     const loadingSpinner = document.getElementById('loadingSpinner');
-    const resultadoDiv = document.getElementById('resultado'); 
-    
+    const resultadoDiv = document.getElementById('resultado');
+
     if (resultadoDiv) {
         resultadoDiv.innerHTML = '<h3>Resultados da Pesquisa:</h3><div id="loadingSpinner" class="spinner" style="display: block;"></div><p class="no-results">Carregando dados dos Mobs...</p>';
     }
     if (loadingSpinner) {
-        loadingSpinner.style.display = 'block'; 
+        loadingSpinner.style.display = 'block';
     }
     console.log("Iniciando carregamento dos dados dos Mobs...");
-    console.log("Tentando carregar de:", MOB_DATA_URL); // Loga o URL que está sendo usado
+    console.log("Tentando carregar de:", MOB_DATA_URL);
 
     try {
         const response = await fetch(MOB_DATA_URL);
@@ -43,7 +44,7 @@ async function loadMobsData() {
         if (!response.ok) {
             throw new Error(`Erro HTTP ao carregar dados: ${response.status} ${response.statusText}`);
         }
-        
+
         allMobsData = await response.json();
         console.log("Dados dos Mobs carregados com sucesso:", allMobsData);
         console.log("Número de Mobs carregados:", allMobsData.length);
@@ -60,17 +61,109 @@ async function loadMobsData() {
         }
     } finally {
         if (loadingSpinner) {
-            loadingSpinner.style.display = 'none'; // Esconde o spinner
+            loadingSpinner.style.display = 'none';
         }
         console.log("Carregamento dos dados dos Mobs finalizado.");
     }
 }
 
+// Funções para gerenciar a lista de mobs selecionados
+function loadSelectedMobs() {
+    const storedMobs = localStorage.getItem('selectedMobs');
+    if (storedMobs) {
+        selectedMobs = JSON.parse(storedMobs);
+    }
+    updateSelectedMobCount();
+}
+
+function saveSelectedMobs() {
+    localStorage.setItem('selectedMobs', JSON.stringify(selectedMobs));
+    updateSelectedMobCount();
+}
+
+function updateSelectedMobCount() {
+    const countSpan = document.getElementById('selectedMobCount');
+    if (countSpan) {
+        countSpan.innerText = selectedMobs.length;
+    }
+}
+
+function isMobSelected(mobNumber) {
+    return selectedMobs.some(mob => mob["Número"] === mobNumber);
+}
+
+function addMobToList(mob) {
+    if (!isMobSelected(mob["Número"])) {
+        selectedMobs.push(mob);
+        saveSelectedMobs();
+        mostrarToast(`"${mob["Nome do Mob"]}" adicionado à lista!`, "success");
+        // Atualiza a exibição dos resultados para mudar o botão
+        buscarMob(document.getElementById('searchInput').value.trim()); // Re-executa a busca para atualizar botões
+        displaySelectedMobs(); // Atualiza a lista no popup se estiver aberto
+    } else {
+        mostrarToast(`"${mob["Nome do Mob"]}" já está na lista.`, "info");
+    }
+}
+
+function removeMobFromList(mobNumber) {
+    const initialLength = selectedMobs.length;
+    selectedMobs = selectedMobs.filter(mob => mob["Número"] !== mobNumber);
+    if (selectedMobs.length < initialLength) {
+        saveSelectedMobs();
+        mostrarToast("Mob removido da lista.", "success");
+        // Atualiza a exibição dos resultados para mudar o botão
+        buscarMob(document.getElementById('searchInput').value.trim()); // Re-executa a busca para atualizar botões
+        displaySelectedMobs(); // Atualiza a lista no popup se estiver aberto
+    }
+}
+
+// Funções para controlar o popup da lista
+function openSelectedMobsListPopup() {
+    const overlay = document.getElementById('selectedMobsListOverlay');
+    if (overlay) {
+        overlay.style.display = 'flex'; // Torna o overlay visível
+        displaySelectedMobs(); // Carrega os mobs na lista do popup
+    }
+}
+
+function closeSelectedMobsListPopup() {
+    const overlay = document.getElementById('selectedMobsListOverlay');
+    if (overlay) {
+        overlay.style.display = 'none'; // Esconde o overlay
+    }
+}
+
+// Função para exibir os mobs selecionados dentro do popup
+function displaySelectedMobs() {
+    const contentDiv = document.getElementById('selectedMobsContent');
+    if (!contentDiv) return;
+
+    contentDiv.innerHTML = ''; // Limpa o conteúdo anterior
+
+    if (selectedMobs.length === 0) {
+        contentDiv.innerHTML = '<p class="no-items-message">Nenhum mob na sua lista ainda.</p>';
+        return;
+    }
+
+    selectedMobs.forEach(mob => {
+        const mobItem = document.createElement('div');
+        mobItem.className = 'mob-item-list';
+        mobItem.innerHTML = `
+            <span>${mob["Nome do Mob"] || 'N/A'}</span>
+            <button class="remove-button" onclick="removeMobFromList(${mob["Número"]})">
+                <i class="fas fa-minus"></i>
+            </button>
+        `;
+        contentDiv.appendChild(mobItem);
+    });
+}
+
+
 // Função para buscar Mob
-async function buscarMob() { 
-    const searchInput = document.getElementById('searchInput'); 
-    const termo = searchInput.value.trim().toLowerCase(); 
-    const resultado = document.getElementById('resultado'); 
+async function buscarMob(initialTerm = null) { // Adicionado initialTerm para re-busca
+    const searchInput = document.getElementById('searchInput');
+    const termo = (initialTerm !== null) ? initialTerm.toLowerCase() : searchInput.value.trim().toLowerCase();
+    const resultado = document.getElementById('resultado');
     const loadingSpinner = document.getElementById('loadingSpinner');
 
     resultado.innerHTML = '<h3>Resultados da Pesquisa:</h3>'; // Limpa resultados anteriores
@@ -88,29 +181,38 @@ async function buscarMob() {
     }
 
     if (loadingSpinner) {
-        loadingSpinner.style.display = 'block'; // Mostra o spinner durante a busca
+        loadingSpinner.style.display = 'block';
     }
     mostrarToast(`Buscando por "${termo}"...`, "info");
 
-    // Filtra os mobs carregados
-    const foundMobs = allMobsData.filter(mob => 
-        mob["Nome do Mob"] && mob["Nome do Mob"].toLowerCase().includes(termo) 
+    const foundMobs = allMobsData.filter(mob =>
+        mob["Nome do Mob"] && mob["Nome do Mob"].toLowerCase().includes(termo)
     );
 
-    // Simula um pequeno atraso para a experiência do usuário
-    await new Promise(resolve => setTimeout(resolve, 500)); 
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     if (loadingSpinner) {
-        loadingSpinner.style.display = 'none'; // Esconde o spinner após a busca
+        loadingSpinner.style.display = 'none';
     }
 
     if (foundMobs.length > 0) {
         foundMobs.forEach(mob => {
+            const isSelected = isMobSelected(mob["Número"]);
             resultado.innerHTML += `
-                <p><strong>Número:</strong> ${mob["Número"] !== null ? mob["Número"] : 'N/A'}</p>
-                <p><strong>Nome do Mob:</strong> ${mob["Nome do Mob"] || 'N/A'}</p>
-                <p><strong>Pontos:</strong> ${mob["Pontos"] !== null ? mob["Pontos"] : 'N/A'}</p>
-                <p><strong>Arquivo:</strong> ${mob["Arquivo"] || 'N/A'}</p>
+                <div class="mob-result-item">
+                    <div>
+                        <p><strong>Número:</strong> ${mob["Número"] !== null ? mob["Número"] : 'N/A'}</p>
+                        <p><strong>Nome do Mob:</strong> ${mob["Nome do Mob"] || 'N/A'}</p>
+                        <p><strong>Pontos:</strong> ${mob["Pontos"] !== null ? mob["Pontos"] : 'N/A'}</p>
+                        <p><strong>Arquivo:</strong> ${mob["Arquivo"] || 'N/A'}</p>
+                    </div>
+                    <div class="action-buttons">
+                        ${isSelected
+                            ? `<button class="remove-button" onclick="removeMobFromList(${mob["Número"]})"><i class="fas fa-minus"></i></button>`
+                            : `<button class="add-button" onclick="addMobToList(${JSON.stringify(mob).replace(/"/g, '&quot;')})"><i class="fas fa-plus"></i></button>`
+                        }
+                    </div>
+                </div>
                 <hr style="border-color: var(--border-color); margin: 10px 0;">
             `;
         });
@@ -121,8 +223,10 @@ async function buscarMob() {
     }
 }
 
-// Ao carregar a página, carrega os dados dos mobs
+
+// Ao carregar a página, carrega os dados dos mobs e a lista de selecionados
 window.onload = async () => {
-    await loadMobsData(); 
+    loadSelectedMobs(); // Carrega a lista de mobs selecionados do localStorage
+    await loadMobsData(); // Carrega os dados dos mobs do GitHub
 };
 
