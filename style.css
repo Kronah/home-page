@@ -1,114 +1,215 @@
+:root {
+    --dark-bg: #1A1A2E;
+    --dark-card: #2C2C40;
+    --primary-green: #6BE570; /* Cor principal (verde) */
+    --accent-green: #4CAF50; /* Verde de destaque */
+    --text-light: #E0E0E0;
+    --text-muted: #A0A0A0;
+    --border-color: #444455;
+    --error-red: #D32F2F;
+    --success-green: #4CAF50;
+}
+
 body {
-    margin: 0;
-    padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(180deg, #000000, #1a1a1a);
-    color: #f0f0f0;
+    background: linear-gradient(135deg, var(--dark-bg) 0%, #0F1121 100%);
+    color: var(--text-light);
+    font-family: 'Inter', sans-serif;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+    margin: 0; /* Garante que não há margem padrão */
 }
 
-header {
-    background-color: #111;
-    text-align: center;
-    padding: 20px 10px;
-    border-bottom: 2px solid #444;
-}
-
-header .logo {
-    width: 100px;
-    height: auto;
-    margin-bottom: 10px;
-}
-
-header h1 {
-    margin: 0;
-    font-size: 24px;
-    color: #ffcc00;
-}
-
-.container {
-    max-width: 600px;
-    margin: 50px auto;
+.container { /* Estilo para o seu div.container */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-top: 50px; /* Margem superior para centralizar */
+    background: var(--dark-card);
     padding: 30px;
-    background-color: #222;
-    border-radius: 10px;
-    box-shadow: 0 0 10px #000;
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+    width: 90%;
+    max-width: 450px;
+    box-sizing: border-box; /* Inclui padding e borda na largura */
+}
+
+h1 {
+    color: var(--primary-green);
+    margin-bottom: 20px;
+    font-weight: 700;
+    font-size: 2.2em;
+    text-shadow: 0 0 10px rgba(107, 229, 112, 0.3);
     text-align: center;
 }
 
-.subtitle {
-    font-size: 16px;
-    color: #ccc;
-    margin-bottom: 20px;
+label { /* Pode não ser usado diretamente no seu HTML, mas é bom ter */
+    font-size: 1.05rem;
+    margin: 15px 0 5px 0;
+    font-weight: 400;
+    color: var(--text-muted);
 }
 
-input[type="text"] {
-    width: 90%;
-    padding: 12px;
-    font-size: 16px;
-    border: 1px solid #555;
-    border-radius: 5px;
-    background-color: #333;
-    color: #fff;
+input, button {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    padding: 12px 18px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+input {
+    width: calc(100% - 36px); /* Ajusta a largura para o padding */
+    background-color: #1F1F30; /* Fundo mais escuro para input */
+    color: var(--text-light);
+    text-transform: uppercase;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--accent-green);
+    box-shadow: 0 0 0 3px rgba(107, 229, 112, 0.3);
 }
 
 button {
-    margin-top: 15px;
-    padding: 12px 25px;
-    font-size: 16px;
-    font-weight: bold;
-    background-color: #ffcc00;
-    color: #000;
-    border: none;
-    border-radius: 5px;
+    background-color: var(--primary-green);
+    color: var(--dark-bg);
     cursor: pointer;
+    font-weight: 600;
+    margin-top: 15px;
+    box-shadow: 0 4px 15px rgba(107, 229, 112, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%; /* Botão ocupa a largura total do container */
 }
 
 button:hover {
-    background-color: #e6b800;
+    background-color: #5ac560;
+    box-shadow: 0 6px 20px rgba(107, 229, 112, 0.5);
+    transform: translateY(-2px);
 }
 
-#resultado {
+button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(107, 229, 112, 0.3);
+}
+
+#resultado { /* Estilo para o seu div#resultado */
     margin-top: 30px;
+    background: var(--dark-card);
+    padding: 20px;
+    border-radius: 12px;
+    width: 100%;
+    min-height: 100px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     text-align: left;
-    color: #fff;
-}
-
-footer {
-    background-color: #111;
-    text-align: center;
-    padding: 15px;
-    font-size: 14px;
-    color: #777;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-}
-
-/* Loader styles */
-#loader {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    background-color: #111;
-    color: #fff;
+    word-break: break-all;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
+    gap: 10px;
+    box-sizing: border-box; /* Inclui padding e borda na largura */
 }
 
+#resultado h3 {
+    color: var(--primary-green);
+    margin-top: 0;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+#resultado p {
+    margin: 5px 0;
+    color: var(--text-light);
+}
+
+#resultado .no-results {
+    color: var(--text-muted);
+    text-align: center;
+    padding: 20px;
+}
+
+/* Loading spinner styles */
 .spinner {
-    border: 8px solid #333;
-    border-top: 8px solid #ffcc00;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid var(--primary-green);
     border-radius: 50%;
-    width: 60px;
-    height: 60px;
+    width: 30px;
+    height: 30px;
     animation: spin 1s linear infinite;
-    margin-bottom: 20px;
+    margin: 20px auto;
+    display: none; /* Hidden by default */
 }
 
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+/* Toast styles (mantidos e adaptados) */
+#toast {
+    visibility: hidden;
+    min-width: 250px;
+    margin-left: -125px; /* Ajustado para centralizar */
+    background-color: var(--dark-card);
+    color: var(--text-light);
+    text-align: center;
+    border-radius: 8px;
+    padding: 16px 20px;
+    position: fixed;
+    z-index: 1001;
+    left: 50%;
+    bottom: 30px;
+    font-size: 0.95em;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    transition: all 0.3s ease;
+}
+
+#toast.show {
+    visibility: visible;
+    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+#toast.error {
+    background-color: var(--error-red);
+    box-shadow: 0 5px 15px rgba(211, 47, 47, 0.4);
+}
+
+#toast.success {
+    background-color: var(--success-green);
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+}
+
+#toast.info {
+    background-color: var(--accent-green);
+    box-shadow: 0 5px 15px rgba(107, 229, 112, 0.4);
+}
+
+@-webkit-keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 30px; opacity: 1;}
+}
+
+@keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 30px; opacity: 1;}
+}
+
+@-webkit-keyframes fadeout {
+    from {bottom: 30px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
+}
+
+@keyframes fadeout {
+    from {bottom: 30px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
 }
