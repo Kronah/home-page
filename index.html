@@ -84,9 +84,20 @@
             return crypto.randomUUID();
         }
 
+        // Função para obter ou criar um ID único para este dispositivo/navegador
+        function getOrCreateLocalDeviceId() {
+            let localDeviceId = localStorage.getItem('localDeviceId');
+            if (!localDeviceId) {
+                localDeviceId = generateUUID();
+                localStorage.setItem('localDeviceId', localDeviceId);
+            }
+            return localDeviceId;
+        }
+
         async function validarToken() {
             const token = document.getElementById('token').value.trim();
             const output = document.getElementById('output');
+            const currentLocalDeviceId = getOrCreateLocalDeviceId(); // Obtém o ID do dispositivo atual
 
             output.innerText = ""; // Limpa a mensagem anterior
 
@@ -119,40 +130,48 @@
                     return;
                 }
 
-                let currentDeviceId = data.device_id || ''; // Pega o device_id atual do Firebase
+                let firebaseDeviceId = data.device_id || ''; // Pega o device_id do Firebase (pode ser vazio)
 
-                // Se o token não tiver um device_id ou for uma string vazia, gera um novo e atualiza o Firebase
-                if (!currentDeviceId || currentDeviceId === "") {
-                    const newDeviceId = generateUUID();
+                // Lógica principal: Verificar e registrar o device_id
+                if (!firebaseDeviceId || firebaseDeviceId === "") {
+                    // Caso 1: Token nunca foi usado em um dispositivo específico (device_id no Firebase está vazio)
+                    // Registra o device_id do dispositivo atual no Firebase
                     const updateRes = await fetch(url, {
                         method: 'PATCH', // Usar PATCH para atualizar apenas o device_id
-                        body: JSON.stringify({ device_id: newDeviceId }),
+                        body: JSON.stringify({ device_id: currentLocalDeviceId }),
                         headers: {
                             'Content-Type': 'application/json'
                         }
                     });
 
                     if (!updateRes.ok) {
-                        console.warn("Aviso: Não foi possível atualizar o device_id no Firebase.");
-                        // Não interrompe o fluxo, apenas avisa
+                        console.warn("Aviso: Não foi possível registrar o device_id no Firebase.");
+                        // Não interrompe o fluxo, apenas avisa. O token ainda será válido para este uso.
                     } else {
-                        currentDeviceId = newDeviceId; // Atualiza o device_id para exibição
-                        console.log(`Device ID ${newDeviceId} registrado para o token ${token}`);
+                        firebaseDeviceId = currentLocalDeviceId; // Atualiza para exibição
+                        console.log(`Device ID ${currentLocalDeviceId} registrado para o token ${token}`);
+                    }
+                } else {
+                    // Caso 2: Token já tem um device_id registrado no Firebase
+                    // Compara o device_id do Firebase com o ID do dispositivo atual
+                    if (firebaseDeviceId !== currentLocalDeviceId) {
+                        output.innerHTML = `❌ Token já está em uso em outro dispositivo.<br>Device ID registrado: ${firebaseDeviceId}`;
+                        return; // Impede o acesso
                     }
                 }
 
-                // Tudo ok! Acesso liberado!
+                // Se chegou até aqui, o token é válido, não expirou e está no dispositivo correto (ou é o primeiro uso)
                 output.innerHTML =
                     `✅ Acesso liberado!<br><br>` +
                     `Nome: ${data.nome}<br>` +
                     `Válido até: ${formatarData(data.expire_at)}<br>` +
-                    `Device ID: ${currentDeviceId || 'Não Registrado'}<br><br>` + // Exibe o device_id (novo ou existente)
+                    `Device ID: ${firebaseDeviceId || 'Não Registrado'}<br><br>` + // Exibe o device_id (registrado ou 'Não Registrado')
                     `Redirecionando para a tela de pesquisa...`;
 
                 // Armazena o nome, o ID do token e o device_id no localStorage para a próxima tela
                 localStorage.setItem('validatedUserName', data.nome);
                 localStorage.setItem('validatedTokenId', token);
-                localStorage.setItem('validatedDeviceId', currentDeviceId || ''); // Armazena o ID atual
+                localStorage.setItem('validatedDeviceId', firebaseDeviceId || ''); // Armazena o ID final
 
                 // Redireciona após 2 segundos (2000 milissegundos)
                 setTimeout(() => {
