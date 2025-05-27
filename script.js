@@ -1,10 +1,8 @@
-const MOB_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/refs/heads/main/dados.json'; // URL do seu arquivo JSON no GitHub
+const MOB_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/refs/heads/main/dados.json'; // URL CORRIGIDO
 let allMobsData = []; // Variável para armazenar os dados dos mobs uma vez carregados
 
 // Função para mostrar toasts (adaptada para o seu contexto)
 function mostrarToast(mensagem, tipo = "success") {
-    // Se você tiver um elemento toast no seu index.html, ele será usado.
-    // Caso contrário, a mensagem será apenas logada no console.
     const toast = document.getElementById("toast");
     if (toast) { 
         toast.className = "show";
@@ -16,7 +14,6 @@ function mostrarToast(mensagem, tipo = "success") {
         }, 3000);
     } else {
         console.warn("Elemento Toast não encontrado. Mensagem:", mensagem);
-        // Fallback simples para o console se o toast não existir
         if (tipo === "error") {
             console.error(mensagem);
         } else {
@@ -41,10 +38,9 @@ async function loadMobsData() {
 
     try {
         const response = await fetch(MOB_DATA_URL);
-        console.log("Resposta da requisição para dados.json:", response); // Log atualizado
+        console.log("Resposta da requisição para dados.json:", response);
 
         if (!response.ok) {
-            // Se a resposta não for OK (ex: 404, 500), lança um erro
             throw new Error(`Erro HTTP ao carregar dados: ${response.status} ${response.statusText}`);
         }
         
@@ -81,13 +77,13 @@ async function buscarMob() {
 
     if (!termo) {
         resultado.innerHTML += '<p class="no-results">Por favor, digite um nome de Mob para buscar.</p>';
-        mostrarToast("Por favor, digite um nome para buscar.", "info"); // Mensagem mais específica
+        mostrarToast("Por favor, digite um nome para buscar.", "info");
         return;
     }
 
     if (allMobsData.length === 0) {
         resultado.innerHTML += '<p class="no-results">Dados dos Mobs ainda não carregados. Por favor, aguarde ou tente recarregar a página.</p>';
-        mostrarToast("Dados dos Mobs não carregados. Aguarde ou recarregue.", "info"); // Mensagem mais específica
+        mostrarToast("Dados dos Mobs não carregados. Aguarde ou recarregue.", "info");
         return;
     }
 
