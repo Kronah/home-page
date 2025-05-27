@@ -8,6 +8,8 @@
     --border-color: #444455;
     --error-red: #D32F2F;
     --success-green: #4CAF50;
+    --add-button-color: #28a745; /* Verde para adicionar */
+    --remove-button-color: #dc3545; /* Vermelho para remover */
 }
 
 body {
@@ -21,8 +23,37 @@ body {
     min-height: 100vh;
     position: relative;
     overflow-x: hidden;
-    margin: 0;
+    margin: 0; /* Garante que não há margem padrão */
     box-sizing: border-box; /* Garante que padding e borda não adicionem à largura total */
+}
+
+/* Botão "Minha Lista" no topo */
+#openListButton {
+    position: fixed; /* Fixa na tela */
+    top: 1.5rem;
+    right: 1.5rem;
+    background-color: var(--accent-green);
+    color: var(--dark-bg);
+    padding: 0.8rem 1.2rem;
+    border-radius: 10px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(107, 229, 112, 0.4);
+    z-index: 500; /* Acima do conteúdo principal */
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+#openListButton:hover {
+    background-color: #5ac560;
+    transform: translateY(-2px);
+}
+#selectedMobCount {
+    background-color: rgba(0,0,0,0.2);
+    padding: 0.2rem 0.6rem;
+    border-radius: 5px;
+    font-size: 0.8em;
 }
 
 .container {
@@ -30,7 +61,7 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 1rem; /* Espaçamento responsivo */
-    margin-top: 2rem; /* Margem superior ajustável */
+    margin-top: 5rem; /* Margem superior ajustável para acomodar o botão da lista */
     background: var(--dark-card);
     padding: 1.8rem; /* Padding responsivo */
     border-radius: 15px;
@@ -49,7 +80,7 @@ h1 {
     text-align: center;
 }
 
-label {
+label { /* Pode não ser usado diretamente no seu HTML, mas é bom ter */
     font-size: 1rem; /* Tamanho de fonte base */
     margin: 1rem 0 0.5rem 0;
     font-weight: 400;
@@ -90,7 +121,7 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem; /* Espaçamento responsivo */
+    gap: 0.5rem;
     width: 100%; /* Ocupa 100% da largura do container */
 }
 
@@ -143,6 +174,49 @@ button:active {
     font-size: 1rem; /* Tamanho de fonte base */
 }
 
+/* Estilos para os botões de adicionar/remover na lista de resultados */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: auto; /* Empurra os botões para a direita */
+}
+.action-buttons button {
+    width: auto; /* Largura automática para os botões de ação */
+    padding: 0.5rem 0.8rem;
+    font-size: 0.9rem;
+    margin-top: 0; /* Remove margem superior extra */
+    box-shadow: none; /* Remove sombra padrão */
+    border-radius: 5px;
+}
+.add-button {
+    background-color: var(--add-button-color);
+    color: white;
+}
+.add-button:hover {
+    background-color: #218838;
+}
+.remove-button {
+    background-color: var(--remove-button-color);
+    color: white;
+}
+.remove-button:hover {
+    background-color: #c82333;
+}
+/* Alinhar o texto do mob e os botões na mesma linha */
+.mob-result-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Espaça o texto e os botões */
+    flex-wrap: wrap; /* Permite quebrar linha em telas pequenas */
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+}
+.mob-result-item p {
+    margin: 0; /* Remove margem padrão dos parágrafos dentro do item */
+    flex-grow: 1; /* Permite que o texto ocupe o espaço disponível */
+}
+
+
 /* Loading spinner styles */
 .spinner {
     border: 4px solid rgba(255, 255, 255, 0.3);
@@ -151,7 +225,7 @@ button:active {
     width: 30px;
     height: 30px;
     animation: spin 1s linear infinite;
-    margin: 1.2rem auto; /* Margem responsiva */
+    margin: 1.2rem auto;
     display: none;
 }
 
@@ -160,20 +234,99 @@ button:active {
     100% { transform: rotate(360deg); }
 }
 
+/* Overlay geral para popups */
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background-color: rgba(0, 0, 0, 0.85);
+    z-index: 990; /* Abaixo do toast, acima do conteúdo */
+    backdrop-filter: blur(5px);
+    justify-content: center;
+    align-items: center;
+}
+
+/* Estilo base para todos os popups */
+.popup {
+    background-color: var(--dark-card);
+    border: 1px solid var(--primary-green);
+    border-radius: 15px;
+    padding: 1.8rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 1000; /* Acima do overlay */
+    width: 90%;
+    max-width: 500px; /* Largura máxima para popups */
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    animation: fadeIn 0.3s ease-out;
+    box-sizing: border-box;
+    max-height: 90vh; /* Altura máxima para permitir scroll */
+    overflow-y: auto; /* Permite scroll se o conteúdo for grande */
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.popup h2 {
+    color: var(--primary-green);
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.6em;
+}
+
+.popup-content { /* Conteúdo dentro do popup da lista */
+    flex-grow: 1; /* Permite que ocupe o espaço disponível */
+    overflow-y: auto; /* Permite scroll interno */
+    padding-right: 0.5rem; /* Para evitar que o scrollbar corte o conteúdo */
+}
+
+.popup-content .mob-item-list { /* Estilo para cada item na lista do popup */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.95rem;
+    flex-wrap: wrap; /* Permite quebrar linha em telas pequenas */
+    gap: 0.5rem;
+}
+.popup-content .mob-item-list:last-child {
+    border-bottom: none;
+}
+.popup-content .mob-item-list span {
+    flex-grow: 1;
+}
+.popup-content .mob-item-list .remove-button {
+    width: auto;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+    margin-top: 0;
+}
+.popup-content .no-items-message {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 1rem;
+}
+
+
 /* Toast styles */
 #toast {
     visibility: hidden;
     min-width: 250px;
-    transform: translateX(-50%); /* Centraliza com transform */
+    transform: translateX(-50%);
     background-color: var(--dark-card);
     color: var(--text-light);
     text-align: center;
     border-radius: 8px;
-    padding: 1rem 1.2rem; /* Padding responsivo */
+    padding: 1rem 1.2rem;
     position: fixed;
-    z-index: 1001;
+    z-index: 1001; /* Z-index mais alto para o toast */
     left: 50%;
-    bottom: 1.5rem; /* Posição responsiva */
+    bottom: 1.5rem;
     font-size: 0.95em;
     box-shadow: 0 5px 15px rgba(0,0,0,0.4);
     transition: all 0.3s ease;
@@ -202,32 +355,38 @@ button:active {
 
 @-webkit-keyframes fadein {
     from {bottom: 0; opacity: 0;}
-    to {bottom: 1.5rem; opacity: 1;} /* Posição responsiva */
+    to {bottom: 1.5rem; opacity: 1;}
 }
 
 @keyframes fadein {
     from {bottom: 0; opacity: 0;}
-    to {bottom: 1.5rem; opacity: 1;} /* Posição responsiva */
+    to {bottom: 1.5rem; opacity: 1;}
 }
 
 @-webkit-keyframes fadeout {
-    from {bottom: 1.5rem; opacity: 1;} /* Posição responsiva */
+    from {bottom: 1.5rem; opacity: 1;}
     to {bottom: 0; opacity: 0;}
 }
 
 @keyframes fadeout {
-    from {bottom: 1.5rem; opacity: 1;} /* Posição responsiva */
+    from {bottom: 1.5rem; opacity: 1;}
     to {bottom: 0; opacity: 0;}
 }
 
 /* Media Queries para ajustes finos em telas menores/maiores */
 @media (max-width: 480px) { /* Para celulares muito pequenos */
     body {
-        padding: 1rem;
+        padding: 0.8rem;
+    }
+    #openListButton {
+        top: 0.8rem;
+        right: 0.8rem;
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
     }
     .container {
-        padding: 1.5rem;
-        margin-top: 1.5rem;
+        padding: 1.2rem;
+        margin-top: 4rem; /* Ajusta para o botão da lista */
     }
     h1 {
         font-size: 1.8em;
@@ -245,7 +404,20 @@ button:active {
     #resultado p {
         font-size: 0.9rem;
     }
-    #toast {
+    .action-buttons button {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
+    }
+    .popup {
+        padding: 1.5rem;
+    }
+    .popup h2 {
+        font-size: 1.4em;
+    }
+    .popup-content .mob-item-list {
+        font-size: 0.9rem;
+    }
+    .toast {
         min-width: 200px;
         font-size: 0.85em;
         padding: 0.8rem 1rem;
@@ -254,15 +426,23 @@ button:active {
 }
 
 @media (min-width: 768px) { /* Para tablets e desktops */
+    #openListButton {
+        top: 2rem;
+        right: 2rem;
+        padding: 1rem 1.5rem;
+        font-size: 1.1rem;
+    }
     .container {
-        margin-top: 3rem;
-        max-width: 550px; /* Um pouco mais largo em telas maiores */
+        margin-top: 6rem;
+        max-width: 550px;
     }
     #resultado {
-        max-width: 700px; /* Resultados podem ser mais largos */
+        max-width: 700px;
     }
     h1 {
         font-size: 2.5em;
     }
+    .popup {
+        max-width: 600px;
+    }
 }
-
