@@ -283,15 +283,23 @@
             const loadingSpinner = document.getElementById('loadingSpinner');
             const searchResultsDiv = document.getElementById('searchResults');
             
-            loadingSpinner.style.display = 'block'; // Mostra o spinner
+            // Garante que o spinner está no lugar certo e visível
             searchResultsDiv.innerHTML = '<h3>Resultados da Pesquisa:</h3><div id="loadingSpinner" class="spinner" style="display: block;"></div><p class="no-results">Carregando dados dos Bosses...</p>';
+            loadingSpinner.style.display = 'block'; 
+            console.log("Iniciando carregamento dos dados dos Bosses...");
 
             try {
                 const response = await fetch(MOB_DATA_URL);
+                console.log("Resposta da requisição:", response);
+
                 if (!response.ok) {
-                    throw new Error(`Erro ao carregar dados: ${response.status} ${response.statusText}`);
+                    throw new Error(`Erro HTTP: ${response.status} ${response.statusText}`);
                 }
+                
                 allMobsData = await response.json();
+                console.log("Dados dos Bosses carregados:", allMobsData);
+                console.log("Número de Bosses carregados:", allMobsData.length);
+
                 mostrarToast("Dados dos Bosses carregados com sucesso!", "success");
                 searchResultsDiv.innerHTML = '<h3>Resultados da Pesquisa:</h3><p class="no-results">Nenhum resultado para exibir ainda. Digite um nome e clique em buscar.</p>';
             } catch (error) {
@@ -300,6 +308,7 @@
                 searchResultsDiv.innerHTML = '<h3>Resultados da Pesquisa:</h3><p class="no-results" style="color: var(--error-red);">Erro ao carregar dados dos Bosses. Tente novamente mais tarde.</p>';
             } finally {
                 loadingSpinner.style.display = 'none'; // Esconde o spinner
+                console.log("Carregamento dos dados dos Bosses finalizado.");
             }
         }
 
@@ -340,7 +349,7 @@
             if (foundBosses.length > 0) {
                 foundBosses.forEach(boss => {
                     searchResultsDiv.innerHTML += `
-                        <p><strong>Número:</strong> ${boss["Número"] || 'N/A'}</p>
+                        <p><strong>Número:</strong> ${boss["Número"] !== null ? boss["Número"] : 'N/A'}</p>
                         <p><strong>Nome do Mob:</strong> ${boss["Nome do Mob"] || 'N/A'}</p>
                         <p><strong>Pontos:</strong> ${boss["Pontos"] !== null ? boss["Pontos"] : 'N/A'}</p>
                         <p><strong>Arquivo:</strong> ${boss["Arquivo"] || 'N/A'}</p>
