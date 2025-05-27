@@ -100,7 +100,7 @@
             max-width: 450px;
         }
 
-        #searchResults {
+        #resultado { /* Alterado de #searchResults para #resultado */
             margin-top: 30px;
             background: var(--dark-card);
             padding: 20px;
@@ -115,16 +115,16 @@
             flex-direction: column;
             gap: 10px;
         }
-        #searchResults h3 {
+        #resultado h3 { /* Alterado de #searchResults para #resultado */
             color: var(--primary-green);
             margin-top: 0;
             margin-bottom: 10px;
         }
-        #searchResults p {
+        #resultado p { /* Alterado de #searchResults para #resultado */
             margin: 5px 0;
             color: var(--text-light);
         }
-        #searchResults .no-results {
+        #resultado .no-results { /* Alterado de #searchResults para #resultado */
             color: var(--text-muted);
             text-align: center;
             padding: 20px;
@@ -245,13 +245,9 @@
     <h1>Pesquisa de Boss - BossDV</h1>
 
     <div id="searchContainer">
-        <label for="bossName">Nome do Boss:</label>
-        <input type="text" id="bossName" placeholder="Digite o nome do Boss" />
-        <button onclick="searchBoss()"><i class="fas fa-search"></i> Buscar Boss</button>
-    </div>
+        <label for="searchInput">Nome do Boss:</label> <input type="text" id="searchInput" placeholder="Digite o nome do Boss" /> <button onclick="buscarMob()"><i class="fas fa-search"></i> Buscar Boss</button> </div>
 
-    <div id="searchResults">
-        <h3>Resultados da Pesquisa:</h3>
+    <div id="resultado"> <h3>Resultados da Pesquisa:</h3>
         <div id="loadingSpinner" class="spinner"></div>
         <p class="no-results">Nenhum resultado para exibir ainda. Digite um nome e clique em buscar.</p>
     </div>
@@ -266,7 +262,7 @@
         const MOB_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/main/data.json';
         let allMobsData = []; // Variável para armazenar os dados dos mobs uma vez carregados
 
-        // Função para mostrar toasts (copiada do seu outro arquivo)
+        // Função para mostrar toasts
         function mostrarToast(mensagem, tipo = "success") {
             const toast = document.getElementById("toast");
             toast.className = "show";
@@ -281,10 +277,10 @@
         // Função para carregar os dados dos mobs do GitHub
         async function loadMobsData() {
             const loadingSpinner = document.getElementById('loadingSpinner');
-            const searchResultsDiv = document.getElementById('searchResults');
+            const resultadoDiv = document.getElementById('resultado'); // Alterado para resultado
             
             // Garante que o spinner está no lugar certo e visível
-            searchResultsDiv.innerHTML = '<h3>Resultados da Pesquisa:</h3><div id="loadingSpinner" class="spinner" style="display: block;"></div><p class="no-results">Carregando dados dos Bosses...</p>';
+            resultadoDiv.innerHTML = '<h3>Resultados da Pesquisa:</h3><div id="loadingSpinner" class="spinner" style="display: block;"></div><p class="no-results">Carregando dados dos Bosses...</p>';
             loadingSpinner.style.display = 'block'; 
             console.log("Iniciando carregamento dos dados dos Bosses...");
 
@@ -301,44 +297,44 @@
                 console.log("Número de Bosses carregados:", allMobsData.length);
 
                 mostrarToast("Dados dos Bosses carregados com sucesso!", "success");
-                searchResultsDiv.innerHTML = '<h3>Resultados da Pesquisa:</h3><p class="no-results">Nenhum resultado para exibir ainda. Digite um nome e clique em buscar.</p>';
+                resultadoDiv.innerHTML = '<h3>Resultados da Pesquisa:</h3><p class="no-results">Nenhum resultado para exibir ainda. Digite um nome e clique em buscar.</p>';
             } catch (error) {
                 console.error("Erro ao carregar dados dos mobs:", error);
                 mostrarToast(`Erro ao carregar dados: ${error.message}`, "error");
-                searchResultsDiv.innerHTML = '<h3>Resultados da Pesquisa:</h3><p class="no-results" style="color: var(--error-red);">Erro ao carregar dados dos Bosses. Tente novamente mais tarde.</p>';
+                resultadoDiv.innerHTML = '<h3>Resultados da Pesquisa:</h3><p class="no-results" style="color: var(--error-red);">Erro ao carregar dados dos Bosses. Tente novamente mais tarde.</p>';
             } finally {
                 loadingSpinner.style.display = 'none'; // Esconde o spinner
                 console.log("Carregamento dos dados dos Bosses finalizado.");
             }
         }
 
-        // Função para buscar Bosses
-        async function searchBoss() {
-            const bossNameInput = document.getElementById('bossName');
-            const bossName = bossNameInput.value.trim();
-            const searchResultsDiv = document.getElementById('searchResults');
+        // Função para buscar Mob (anteriormente searchBoss)
+        async function buscarMob() { // Renomeado de searchBoss para buscarMob
+            const searchInput = document.getElementById('searchInput'); // Alterado de bossNameInput para searchInput
+            const termo = searchInput.value.trim().toLowerCase(); // Alterado de bossName para termo
+            const resultado = document.getElementById('resultado'); // Alterado de searchResultsDiv para resultado
             const loadingSpinner = document.getElementById('loadingSpinner');
 
-            searchResultsDiv.innerHTML = '<h3>Resultados da Pesquisa:</h3>'; // Limpa resultados anteriores
+            resultado.innerHTML = '<h3>Resultados da Pesquisa:</h3>'; // Limpa resultados anteriores
 
-            if (!bossName) {
-                searchResultsDiv.innerHTML += '<p class="no-results">Por favor, digite um nome de Boss para buscar.</p>';
+            if (!termo) {
+                resultado.innerHTML += '<p class="no-results">Por favor, digite um nome de Boss para buscar.</p>';
                 mostrarToast("Digite um nome de Boss.", "info");
                 return;
             }
 
             if (allMobsData.length === 0) {
-                searchResultsDiv.innerHTML += '<p class="no-results">Dados dos Bosses ainda não carregados. Por favor, aguarde ou tente recarregar a página.</p>';
+                resultado.innerHTML += '<p class="no-results">Dados dos Bosses ainda não carregados. Por favor, aguarde ou tente recarregar a página.</p>';
                 mostrarToast("Dados não carregados. Aguarde.", "info");
                 return;
             }
 
             loadingSpinner.style.display = 'block'; // Mostra o spinner durante a busca
-            mostrarToast(`Buscando por "${bossName}"...`, "info");
+            mostrarToast(`Buscando por "${termo}"...`, "info");
 
             // Filtra os mobs carregados
             const foundBosses = allMobsData.filter(mob => 
-                mob["Nome do Mob"] && mob["Nome do Mob"].toUpperCase().includes(bossName.toUpperCase())
+                mob["Nome do Mob"] && mob["Nome do Mob"].toLowerCase().includes(termo) // Usar termo em minúsculas
             );
 
             // Simula um pequeno atraso para a experiência do usuário
@@ -348,7 +344,7 @@
 
             if (foundBosses.length > 0) {
                 foundBosses.forEach(boss => {
-                    searchResultsDiv.innerHTML += `
+                    resultado.innerHTML += `
                         <p><strong>Número:</strong> ${boss["Número"] !== null ? boss["Número"] : 'N/A'}</p>
                         <p><strong>Nome do Mob:</strong> ${boss["Nome do Mob"] || 'N/A'}</p>
                         <p><strong>Pontos:</strong> ${boss["Pontos"] !== null ? boss["Pontos"] : 'N/A'}</p>
@@ -358,7 +354,7 @@
                 });
                 mostrarToast(`Encontrados ${foundBosses.length} Boss(es)!`, "success");
             } else {
-                searchResultsDiv.innerHTML += '<p class="no-results">Nenhum Boss encontrado com esse nome.</p>';
+                resultado.innerHTML += '<p class="no-results">Nenhum Boss encontrado com esse nome.</p>';
                 mostrarToast("Nenhum Boss encontrado.", "error");
             }
         }
