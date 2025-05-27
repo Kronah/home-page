@@ -14,43 +14,44 @@ body {
     background: linear-gradient(135deg, var(--dark-bg) 0%, #0F1121 100%);
     color: var(--text-light);
     font-family: 'Inter', sans-serif;
-    padding: 25px;
+    padding: 1.5rem; /* Padding responsivo */
     display: flex;
     flex-direction: column;
     align-items: center;
     min-height: 100vh;
     position: relative;
     overflow-x: hidden;
-    margin: 0; /* Garante que não há margem padrão */
+    margin: 0;
+    box-sizing: border-box; /* Garante que padding e borda não adicionem à largura total */
 }
 
-.container { /* Estilo para o seu div.container */
+.container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px;
-    margin-top: 50px; /* Margem superior para centralizar */
+    gap: 1rem; /* Espaçamento responsivo */
+    margin-top: 2rem; /* Margem superior ajustável */
     background: var(--dark-card);
-    padding: 30px;
+    padding: 1.8rem; /* Padding responsivo */
     border-radius: 15px;
     box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-    width: 90%;
-    max-width: 450px;
-    box-sizing: border-box; /* Inclui padding e borda na largura */
+    width: 100%; /* Ocupa 100% da largura disponível */
+    max-width: 500px; /* Largura máxima para telas maiores */
+    box-sizing: border-box;
 }
 
 h1 {
     color: var(--primary-green);
-    margin-bottom: 20px;
+    margin-bottom: 1.5rem; /* Margem responsiva */
     font-weight: 700;
-    font-size: 2.2em;
+    font-size: 2.2em; /* Tamanho de fonte base */
     text-shadow: 0 0 10px rgba(107, 229, 112, 0.3);
     text-align: center;
 }
 
-label { /* Pode não ser usado diretamente no seu HTML, mas é bom ter */
-    font-size: 1.05rem;
-    margin: 15px 0 5px 0;
+label {
+    font-size: 1rem; /* Tamanho de fonte base */
+    margin: 1rem 0 0.5rem 0;
     font-weight: 400;
     color: var(--text-muted);
 }
@@ -58,15 +59,16 @@ label { /* Pode não ser usado diretamente no seu HTML, mas é bom ter */
 input, button {
     font-family: 'Inter', sans-serif;
     font-size: 1rem;
-    padding: 12px 18px;
+    padding: 0.8rem 1rem; /* Padding responsivo */
     border-radius: 10px;
     border: 1px solid var(--border-color);
     transition: all 0.3s ease;
+    box-sizing: border-box; /* Garante que padding e borda não adicionem à largura total */
 }
 
 input {
-    width: calc(100% - 36px); /* Ajusta a largura para o padding */
-    background-color: #1F1F30; /* Fundo mais escuro para input */
+    width: 100%; /* Ocupa 100% da largura do container */
+    background-color: #1F1F30;
     color: var(--text-light);
     text-transform: uppercase;
     box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
@@ -83,13 +85,13 @@ button {
     color: var(--dark-bg);
     cursor: pointer;
     font-weight: 600;
-    margin-top: 15px;
+    margin-top: 1rem; /* Margem responsiva */
     box-shadow: 0 4px 15px rgba(107, 229, 112, 0.4);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    width: 100%; /* Botão ocupa a largura total do container */
+    gap: 0.5rem; /* Espaçamento responsivo */
+    width: 100%; /* Ocupa 100% da largura do container */
 }
 
 button:hover {
@@ -103,38 +105,42 @@ button:active {
     box-shadow: 0 2px 8px rgba(107, 229, 112, 0.3);
 }
 
-#resultado { /* Estilo para o seu div#resultado */
-    margin-top: 30px;
+#resultado {
+    margin-top: 1.8rem; /* Margem responsiva */
     background: var(--dark-card);
-    padding: 20px;
+    padding: 1.5rem; /* Padding responsivo */
     border-radius: 12px;
     width: 100%;
+    max-width: 600px; /* Largura máxima para resultados */
     min-height: 100px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     text-align: left;
     word-break: break-all;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    box-sizing: border-box; /* Inclui padding e borda na largura */
+    gap: 0.8rem; /* Espaçamento responsivo */
+    box-sizing: border-box;
 }
 
 #resultado h3 {
     color: var(--primary-green);
     margin-top: 0;
-    margin-bottom: 10px;
+    margin-bottom: 0.8rem; /* Margem responsiva */
     text-align: center;
+    font-size: 1.3em; /* Tamanho de fonte base */
 }
 
 #resultado p {
-    margin: 5px 0;
+    margin: 0.3rem 0; /* Margem responsiva */
     color: var(--text-light);
+    font-size: 0.95rem; /* Tamanho de fonte base */
 }
 
 #resultado .no-results {
     color: var(--text-muted);
     text-align: center;
-    padding: 20px;
+    padding: 1rem; /* Padding responsivo */
+    font-size: 1rem; /* Tamanho de fonte base */
 }
 
 /* Loading spinner styles */
@@ -145,8 +151,8 @@ button:active {
     width: 30px;
     height: 30px;
     animation: spin 1s linear infinite;
-    margin: 20px auto;
-    display: none; /* Hidden by default */
+    margin: 1.2rem auto; /* Margem responsiva */
+    display: none;
 }
 
 @keyframes spin {
@@ -154,20 +160,20 @@ button:active {
     100% { transform: rotate(360deg); }
 }
 
-/* Toast styles (mantidos e adaptados) */
+/* Toast styles */
 #toast {
     visibility: hidden;
     min-width: 250px;
-    margin-left: -125px; /* Ajustado para centralizar */
+    transform: translateX(-50%); /* Centraliza com transform */
     background-color: var(--dark-card);
     color: var(--text-light);
     text-align: center;
     border-radius: 8px;
-    padding: 16px 20px;
+    padding: 1rem 1.2rem; /* Padding responsivo */
     position: fixed;
     z-index: 1001;
     left: 50%;
-    bottom: 30px;
+    bottom: 1.5rem; /* Posição responsiva */
     font-size: 0.95em;
     box-shadow: 0 5px 15px rgba(0,0,0,0.4);
     transition: all 0.3s ease;
@@ -196,20 +202,67 @@ button:active {
 
 @-webkit-keyframes fadein {
     from {bottom: 0; opacity: 0;}
-    to {bottom: 30px; opacity: 1;}
+    to {bottom: 1.5rem; opacity: 1;} /* Posição responsiva */
 }
 
 @keyframes fadein {
     from {bottom: 0; opacity: 0;}
-    to {bottom: 30px; opacity: 1;}
+    to {bottom: 1.5rem; opacity: 1;} /* Posição responsiva */
 }
 
 @-webkit-keyframes fadeout {
-    from {bottom: 30px; opacity: 1;}
+    from {bottom: 1.5rem; opacity: 1;} /* Posição responsiva */
     to {bottom: 0; opacity: 0;}
 }
 
 @keyframes fadeout {
-    from {bottom: 30px; opacity: 1;}
+    from {bottom: 1.5rem; opacity: 1;} /* Posição responsiva */
     to {bottom: 0; opacity: 0;}
 }
+
+/* Media Queries para ajustes finos em telas menores/maiores */
+@media (max-width: 480px) { /* Para celulares muito pequenos */
+    body {
+        padding: 1rem;
+    }
+    .container {
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+    }
+    h1 {
+        font-size: 1.8em;
+    }
+    input, button {
+        font-size: 0.9rem;
+        padding: 0.7rem 0.8rem;
+    }
+    #resultado {
+        padding: 1rem;
+    }
+    #resultado h3 {
+        font-size: 1.1em;
+    }
+    #resultado p {
+        font-size: 0.9rem;
+    }
+    #toast {
+        min-width: 200px;
+        font-size: 0.85em;
+        padding: 0.8rem 1rem;
+        bottom: 1rem;
+    }
+}
+
+@media (min-width: 768px) { /* Para tablets e desktops */
+    .container {
+        margin-top: 3rem;
+        max-width: 550px; /* Um pouco mais largo em telas maiores */
+    }
+    #resultado {
+        max-width: 700px; /* Resultados podem ser mais largos */
+    }
+    h1 {
+        font-size: 2.5em;
+    }
+}
+
