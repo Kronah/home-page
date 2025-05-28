@@ -1,6 +1,69 @@
-const MOB_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/refs/heads/main/dados.json'; // URL do seu arquivo JSON no GitHub
-let allMobsData = []; // Variável para armazenar os dados dos mobs uma vez carregados
-let selectedMobs = []; // Nova variável para armazenar os mobs selecionados
+const MOB_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/refs/heads/main/dados.json';
+let allMobsData = [];
+let selectedMobs = [];
+
+// Definição dos temas com suas variáveis de cor
+const themes = {
+    'green': {
+        '--bg-color': '#1A1A2E',
+        '--card-color': '#2C2C40',
+        '--primary-color': '#6BE570',
+        '--accent-color': '#4CAF50',
+        '--text-light-color': '#E0E0E0',
+        '--text-muted-color': '#A0A0A0',
+        '--border-color': '#444455',
+        '--add-btn-color': '#28a745',
+        '--remove-btn-color': '#dc3545',
+        '--error-color': '#D32F2F',
+        '--success-color': '#4CAF50',
+        '--primary-color-rgb': '107, 229, 112', // RGB para sombras dinâmicas
+        '--accent-color-rgb': '76, 175, 80',
+    },
+    'blue': {
+        '--bg-color': '#1A2A3E',
+        '--card-color': '#2C3A4E',
+        '--primary-color': '#4FC3F7',
+        '--accent-color': '#2196F3',
+        '--text-light-color': '#E0E0E0',
+        '--text-muted-color': '#A0A0A0',
+        '--border-color': '#3A4A5A',
+        '--add-btn-color': '#1E88E5',
+        '--remove-btn-color': '#dc3545',
+        '--error-color': '#D32F2F',
+        '--success-color': '#4CAF50',
+        '--primary-color-rgb': '79, 195, 247',
+        '--accent-color-rgb': '33, 150, 243',
+    },
+    'purple': {
+        '--bg-color': '#2E1A3E',
+        '--card-color': '#402C4E',
+        '--primary-color': '#BB86FC',
+        '--accent-color': '#9C27B0',
+        '--text-light-color': '#E0E0E0',
+        '--text-muted-color': '#A0A0A0',
+        '--border-color': '#554455',
+        '--add-btn-color': '#673AB7',
+        '--remove-btn-color': '#dc3545',
+        '--error-color': '#D32F2F',
+        '--success-color': '#4CAF50',
+        '--primary-color-rgb': '187, 134, 252',
+        '--accent-color-rgb': '156, 39, 176',
+    }
+};
+
+// Função para aplicar o tema
+function setTheme(themeName) {
+    const theme = themes[themeName];
+    if (theme) {
+        for (const [key, value] of Object.entries(theme)) {
+            document.documentElement.style.setProperty(key, value);
+        }
+        localStorage.setItem('currentTheme', themeName);
+        console.log(`Tema '${themeName}' aplicado.`);
+    } else {
+        console.warn(`Tema '${themeName}' não encontrado.`);
+    }
+}
 
 // Função para mostrar toasts
 function mostrarToast(mensagem, tipo = "success") {
@@ -10,8 +73,23 @@ function mostrarToast(mensagem, tipo = "success") {
         toast.className = `show ${tipo}`;
         toast.innerText = mensagem;
 
+        // Resetar as cores do toast para o tema atual antes de aplicar a cor de tipo
+        toast.style.backgroundColor = themes[localStorage.getItem('currentTheme') || 'green']['--card-color'];
+        toast.style.color = themes[localStorage.getItem('currentTheme') || 'green']['--text-light-color'];
+
+
+        if (tipo === "error") {
+            toast.style.backgroundColor = themes.green['--error-color']; // Usa cor fixa de erro
+        } else if (tipo === "success") {
+            toast.style.backgroundColor = themes.green['--success-color']; // Usa cor fixa de sucesso
+        } else if (tipo === "info") {
+            toast.style.backgroundColor = themes[localStorage.getItem('currentTheme') || 'green']['--accent-color']; // Usa cor de acento do tema
+        }
+
         setTimeout(() => {
             toast.className = toast.className.replace("show", "");
+            // Opcional: Resetar o background do toast para a cor padrão do card após sumir
+            toast.style.backgroundColor = themes[localStorage.getItem('currentTheme') || 'green']['--card-color'];
         }, 3000);
     } else {
         console.warn("Elemento Toast não encontrado. Mensagem:", mensagem);
@@ -57,7 +135,7 @@ async function loadMobsData() {
         console.error("Erro FATAL ao carregar dados dos Mobs:", error);
         mostrarToast(`Erro ao carregar dados: ${error.message}. Verifique o console.`, "error");
         if (resultadoDiv) {
-            resultadoDiv.innerHTML = '<h3>Resultados da Pesquisa:</h3><p class="no-results" style="color: var(--error-red);">Erro ao carregar dados dos Mobs. Por favor, verifique sua conexão ou o link do arquivo.</p>';
+            resultadoDiv.innerHTML = '<h3>Resultados da Pesquisa:</h3><p class="no-results" style="color: var(--error-color);">Erro ao carregar dados dos Mobs. Por favor, verifique sua conexão ou o link do arquivo.</p>';
         }
     } finally {
         if (loadingSpinner) {
@@ -91,12 +169,11 @@ function updateSelectedMobCount() {
 }
 
 function isMobSelected(mobNumber) {
-    if (mobNumber === null || mobNumber === undefined) return false; // Garante que o número existe
+    if (mobNumber === null || mobNumber === undefined) return false;
     const selected = selectedMobs.some(mob => mob["Número"] === mobNumber);
     return selected;
 }
 
-// Alterado: agora recebe apenas o número do mob
 function addMobToList(mobNumber) {
     if (mobNumber === null || mobNumber === undefined) {
         mostrarToast("Erro: Mob sem número de identificação.", "error");
@@ -112,9 +189,8 @@ function addMobToList(mobNumber) {
         selectedMobs.push(mobToAdd);
         saveSelectedMobs();
         mostrarToast(`"${mobToAdd["Nome do Mob"]}" adicionado à lista!`, "success");
-        // Re-executa a busca para atualizar botões (necessário para mudar + para -)
         buscarMob(document.getElementById('searchInput').value.trim()); 
-        displaySelectedMobs(); // Atualiza a lista no popup se estiver aberto
+        displaySelectedMobs(); 
     } else {
         mostrarToast(`"${mobToAdd["Nome do Mob"]}" já está na lista.`, "info");
     }
@@ -130,9 +206,8 @@ function removeMobFromList(mobNumber) {
     if (selectedMobs.length < initialLength) {
         saveSelectedMobs();
         mostrarToast("Mob removido da lista.", "success");
-        // Re-executa a busca para atualizar botões (necessário para mudar - para +)
         buscarMob(document.getElementById('searchInput').value.trim()); 
-        displaySelectedMobs(); // Atualiza a lista no popup se estiver aberto
+        displaySelectedMobs(); 
     }
 }
 
@@ -172,7 +247,8 @@ function displaySelectedMobs() {
                 <p><strong>Nome:</strong> ${mob["Nome do Mob"] || 'N/A'}</p>
                 <p><strong>Número:</strong> ${mob["Número"] !== null ? mob["Número"] : 'N/A'}</p>
                 <p><strong>Pontos:</strong> ${mob["Pontos"] !== null ? mob["Pontos"] : 'N/A'}</p>
-                <p><strong>Boss:</strong> ${mob["Arquivo"] || 'N/A'}</p> </div>
+                <p><strong>Boss:</strong> ${mob["Arquivo"] || 'N/A'}</p>
+            </div>
             <button class="remove-button" onclick="removeMobFromList(${mob["Número"]})">
                 <i class="fas fa-minus"></i>
             </button>
@@ -180,7 +256,6 @@ function displaySelectedMobs() {
         contentDiv.appendChild(mobItem);
     });
 }
-
 
 // Função para buscar Mob
 async function buscarMob(initialTerm = null) { 
@@ -222,7 +297,6 @@ async function buscarMob(initialTerm = null) {
 
     if (foundMobs.length > 0) {
         foundMobs.forEach(mob => {
-            // Verifica se o mob tem um número válido antes de tentar adicionar/remover
             if (mob["Número"] === null || mob["Número"] === undefined) {
                 console.warn(`Mob "${mob["Nome do Mob"]}" não possui um "Número" válido. Botões de ação não serão exibidos.`);
                 resultado.innerHTML += `
@@ -231,19 +305,19 @@ async function buscarMob(initialTerm = null) {
                             <p><strong>Número:</strong> N/A</p>
                             <p><strong>Nome do Mob:</strong> ${mob["Nome do Mob"] || 'N/A'}</p>
                             <p><strong>Pontos:</strong> ${mob["Pontos"] !== null ? mob["Pontos"] : 'N/A'}</p>
-                            <p><strong>Boss:</strong> N/A</p> </div>
+                            <p><strong>Boss:</strong> N/A</p>
+                        </div>
                         <div class="action-buttons">
                             </div>
                     </div>
                     <hr style="border-color: var(--border-color); margin: 10px 0;">
                 `;
-                return; // Pula para o próximo mob
+                return;
             }
 
             const isSelected = isMobSelected(mob["Número"]);
             console.log(`Processing mob: ${mob["Nome do Mob"]}, Number: ${mob["Número"]}, Is Selected: ${isSelected}`); 
 
-            // Alterado: Passando apenas o número do mob para as funções
             const buttonHtml = isSelected
                 ? `<button class="remove-button" onclick="removeMobFromList(${mob["Número"]})"><i class="fas fa-minus"></i></button>`
                 : `<button class="add-button" onclick="addMobToList(${mob["Número"]})"><i class="fas fa-plus"></i></button>`;
@@ -254,7 +328,8 @@ async function buscarMob(initialTerm = null) {
                         <p><strong>Número:</strong> ${mob["Número"] !== null ? mob["Número"] : 'N/A'}</p>
                         <p><strong>Nome do Mob:</strong> ${mob["Nome do Mob"] || 'N/A'}</p>
                         <p><strong>Pontos:</strong> ${mob["Pontos"] !== null ? mob["Pontos"] : 'N/A'}</p>
-                        <p><strong>Boss:</strong> ${mob["Arquivo"] || 'N/A'}</p> </div>
+                        <p><strong>Boss:</strong> ${mob["Arquivo"] || 'N/A'}</p>
+                    </div>
                     <div class="action-buttons">
                         ${buttonHtml}
                     </div>
@@ -272,10 +347,11 @@ async function buscarMob(initialTerm = null) {
     }
 }
 
-
-// Ao carregar a página, carrega os dados dos mobs e a lista de selecionados
+// Ao carregar a página, carrega o tema salvo, os dados dos mobs e a lista de selecionados
 window.onload = async () => {
-    loadSelectedMobs(); // Carrega a lista de mobs selecionados do localStorage
-    await loadMobsData(); // Carrega os dados dos mobs do GitHub
+    const savedTheme = localStorage.getItem('currentTheme') || 'green'; // Pega o tema salvo ou usa 'green'
+    setTheme(savedTheme); // Aplica o tema ao carregar
+    loadSelectedMobs(); 
+    await loadMobsData(); 
 };
 
