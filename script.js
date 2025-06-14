@@ -1,111 +1,111 @@
-let mobs = [];
+let dadosMobs = [];
 let selectedMobs = [];
 
 async function carregarDados() {
-  try {
-    const res = await fetch('https://raw.githubusercontent.com/Kronah/mob-data/refs/heads/main/dados.json');
-    if (!res.ok) throw new Error('Erro ao carregar dados.json');
-    mobs = await res.json();
-  } catch (e) {
-    console.error('Erro ao carregar dados:', e);
-  }
+    try {
+        const response = await fetch('https://raw.githubusercontent.com/Kronah/mob-data/refs/heads/main/dados.json');
+        if (!response.ok) {
+            throw new Error('Erro ao carregar os dados.');
+        }
+        dadosMobs = await response.json();
+    } catch (error) {
+        console.error('Erro:', error);
+    }
 }
 
 function buscarMob() {
-  const query = document.getElementById('searchInput').value.trim().toLowerCase();
-  const resultadoDiv = document.getElementById('resultado');
-  resultadoDiv.innerHTML = '';
+    const termo = document.getElementById('searchInput').value.trim().toLowerCase();
+    const resultadoDiv = document.getElementById('resultado');
+    resultadoDiv.innerHTML = '';
 
-  if (!query) {
-    resultadoDiv.innerHTML = '<p>Digite algo para pesquisar.</p>';
-    return;
-  }
+    if (!termo) {
+        resultadoDiv.innerHTML = '<p>Digite o nome de um mob para pesquisar.</p>';
+        return;
+    }
 
-  // Procura no campo "Nome do Mob"
-  const resultados = mobs.filter(mob =>
-    mob["Nome do Mob"] && mob["Nome do Mob"].toLowerCase().includes(query)
-  );
+    const resultados = dadosMobs.filter(mob => mob["Nome do Mob"].toLowerCase().includes(termo));
 
-  if (resultados.length === 0) {
-    resultadoDiv.innerHTML = '<p>Nenhum mob encontrado.</p>';
-    return;
-  }
+    if (resultados.length === 0) {
+        resultadoDiv.innerHTML = '<p>Nenhum mob encontrado.</p>';
+        return;
+    }
 
-  resultados.forEach(mob => {
-    const mobDiv = document.createElement('div');
-    mobDiv.classList.add('mob-item');
-    mobDiv.innerHTML = `
-      <strong>${mob["Nome do Mob"]}</strong> - Número: ${mob["Número"]} - Arquivo: ${mob["Arquivo"] || 'N/A'} 
-      <button onclick="adicionarMob('${mob["Nome do Mob"]}')">Adicionar</button>
-    `;
-    resultadoDiv.appendChild(mobDiv);
-  });
+    resultados.forEach(mob => {
+        const mobDiv = document.createElement('div');
+        mobDiv.className = 'mob-result';
+
+        mobDiv.innerHTML = `
+            <strong>Número:</strong> ${mob["Número"]}<br>
+            <strong>Nome:</strong> ${mob["Nome do Mob"]}<br>
+            <strong>Arquivo:</strong> ${mob["Arquivo"]}<br>
+            <button onclick='adicionarMob(${JSON.stringify(mob)})'>Adicionar à Lista</button>
+        `;
+
+        resultadoDiv.appendChild(mobDiv);
+    });
 }
 
-function adicionarMob(nome) {
-  if (!selectedMobs.includes(nome)) {
-    selectedMobs.push(nome);
-    atualizarContador();
-    mostrarListaSelecionada();
-    mostrarToast(`"${nome}" adicionado à sua lista.`);
-  } else {
-    mostrarToast(`"${nome}" já está na sua lista.`);
-  }
+function adicionarMob(mob) {
+    // Verifica se já foi adicionado
+    if (selectedMobs.some(item => item["Número"] === mob["Número"])) {
+        showToast('Este mob já está na lista.');
+        return;
+    }
+
+    selectedMobs.push(mob);
+    atualizarListaSelecionados();
+    showToast('Mob adicionado à lista!');
 }
 
-function atualizarContador() {
-  document.getElementById('selectedMobCount').innerText = selectedMobs.length;
+function atualizarListaSelecionados() {
+    const contentDiv = document.getElementById('selectedMobsContent');
+    contentDiv.innerHTML = '';
+
+    if (selectedMobs.length === 0) {
+        contentDiv.innerHTML = '<p class="no-items-message">Nenhum mob na sua lista ainda.</p>';
+        document.getElementById('selectedMobCount').innerText = '0';
+        return;
+    }
+
+    selectedMobs.forEach(mob => {
+        const mobDiv = document.createElement('div');
+        mobDiv.className = 'mob-list-item';
+
+        mobDiv.innerHTML = `
+            <strong>Número:</strong> ${mob["Número"]}<br>
+            <strong>Nome:</strong> ${mob["Nome do Mob"]}<br>
+            <strong>Arquivo:</strong> ${mob["Arquivo"]}<br>
+            <button onclick='removerMob(${JSON.stringify(mob)})'>Remover</button>
+            <hr>
+        `;
+
+        contentDiv.appendChild(mobDiv);
+    });
+
+    document.getElementById('selectedMobCount').innerText = selectedMobs.length;
 }
 
-function mostrarListaSelecionada() {
-  const listaDiv = document.getElementById('selectedMobsContent');
-  listaDiv.innerHTML = '';
-
-  if (selectedMobs.length === 0) {
-    listaDiv.innerHTML = '<p class="no-items-message">Nenhum mob na sua lista ainda.</p>';
-    return;
-  }
-
-  selectedMobs.forEach(nome => {
-    const itemDiv = document.createElement('div');
-    itemDiv.classList.add('selected-mob-item');
-    itemDiv.innerHTML = `
-      ${nome} <button onclick="removerMob('${nome}')">Remover</button>
-    `;
-    listaDiv.appendChild(itemDiv);
-  });
-}
-
-function removerMob(nome) {
-  selectedMobs = selectedMobs.filter(m => m !== nome);
-  atualizarContador();
-  mostrarListaSelecionada();
-  mostrarToast(`"${nome}" removido da sua lista.`);
-}
-
-function mostrarToast(mensagem) {
-  const toast = document.getElementById('toast');
-  toast.innerText = mensagem;
-  toast.style.visibility = 'visible';
-  setTimeout(() => {
-    toast.style.visibility = 'hidden';
-  }, 2500);
+function removerMob(mob) {
+    selectedMobs = selectedMobs.filter(item => item["Número"] !== mob["Número"]);
+    atualizarListaSelecionados();
+    showToast('Mob removido da lista.');
 }
 
 function openSelectedMobsListPopup() {
-  document.getElementById('selectedMobsListOverlay').style.display = 'block';
+    document.getElementById('selectedMobsListOverlay').style.display = 'block';
 }
 
 function closeSelectedMobsListPopup() {
-  document.getElementById('selectedMobsListOverlay').style.display = 'none';
+    document.getElementById('selectedMobsListOverlay').style.display = 'none';
 }
 
-function setTheme(themeName) {
-  document.body.className = themeName + '-theme';
+function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.innerText = message;
+    toast.style.visibility = 'visible';
+    setTimeout(() => {
+        toast.style.visibility = 'hidden';
+    }, 2000);
 }
 
-window.onload = () => {
-  carregarDados();
-  atualizarContador();
-  mostrarListaSelecionada();
-};
+window.onload = carregarDados;
