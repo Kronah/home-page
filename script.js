@@ -38,7 +38,7 @@ function buscarMob() {
             <p><strong>NOME:</strong> ${mob["Nome do Mob"]}</p>
             <p><strong>NÚMERO:</strong> ${mob["Número"]}</p>
             <p><strong>ARQUIVO:</strong> ${mob["Arquivo"]}</p>
-            <button onclick='adicionarMob(${JSON.stringify(mob)})'>Adicionar à Lista</button>
+            <button onclick='adicionarMobPorNumero(${mob["Número"]})'>Adicionar à Lista</button>
             <hr>
         `;
 
@@ -46,7 +46,10 @@ function buscarMob() {
     });
 }
 
-function adicionarMob(mob) {
+function adicionarMobPorNumero(numero) {
+    const mob = dadosMobs.find(m => m["Número"] === numero);
+    if (!mob) return;
+
     if (selectedMobs.some(item => item["Número"] === mob["Número"])) {
         showToast('Este mob já está na lista.');
         return;
@@ -75,7 +78,7 @@ function atualizarListaSelecionados() {
             <p><strong>NOME:</strong> ${mob["Nome do Mob"]}</p>
             <p><strong>NÚMERO:</strong> ${mob["Número"]}</p>
             <p><strong>ARQUIVO:</strong> ${mob["Arquivo"]}</p>
-            <button onclick='removerMob(${JSON.stringify(mob)})'>Remover</button>
+            <button onclick='removerMob(${mob["Número"]})'>Remover</button>
             <hr>
         `;
 
@@ -85,8 +88,8 @@ function atualizarListaSelecionados() {
     document.getElementById('selectedMobCount').innerText = selectedMobs.length;
 }
 
-function removerMob(mob) {
-    selectedMobs = selectedMobs.filter(item => item["Número"] !== mob["Número"]);
+function removerMob(numero) {
+    selectedMobs = selectedMobs.filter(item => item["Número"] !== numero);
     atualizarListaSelecionados();
     showToast('Mob removido da lista.');
 }
