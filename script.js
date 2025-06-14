@@ -35,10 +35,11 @@ function buscarMob() {
         mobDiv.className = 'mob-result';
 
         mobDiv.innerHTML = `
-            <strong>Número:</strong> ${mob["Número"]}<br>
-            <strong>Nome:</strong> ${mob["Nome do Mob"]}<br>
-            <strong>Arquivo:</strong> ${mob["Arquivo"]}<br>
+            <p><strong>NOME:</strong> ${mob["Nome do Mob"]}</p>
+            <p><strong>NÚMERO:</strong> ${mob["Número"]}</p>
+            <p><strong>ARQUIVO:</strong> ${mob["Arquivo"]}</p>
             <button onclick='adicionarMob(${JSON.stringify(mob)})'>Adicionar à Lista</button>
+            <hr>
         `;
 
         resultadoDiv.appendChild(mobDiv);
@@ -46,7 +47,6 @@ function buscarMob() {
 }
 
 function adicionarMob(mob) {
-    // Verifica se já foi adicionado
     if (selectedMobs.some(item => item["Número"] === mob["Número"])) {
         showToast('Este mob já está na lista.');
         return;
@@ -72,9 +72,9 @@ function atualizarListaSelecionados() {
         mobDiv.className = 'mob-list-item';
 
         mobDiv.innerHTML = `
-            <strong>Número:</strong> ${mob["Número"]}<br>
-            <strong>Nome:</strong> ${mob["Nome do Mob"]}<br>
-            <strong>Arquivo:</strong> ${mob["Arquivo"]}<br>
+            <p><strong>NOME:</strong> ${mob["Nome do Mob"]}</p>
+            <p><strong>NÚMERO:</strong> ${mob["Número"]}</p>
+            <p><strong>ARQUIVO:</strong> ${mob["Arquivo"]}</p>
             <button onclick='removerMob(${JSON.stringify(mob)})'>Remover</button>
             <hr>
         `;
