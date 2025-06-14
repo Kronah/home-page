@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<!DOCTYPE html><html lang="pt-BR">
 <head>
     <meta charset="UTF-8" />
     <title>Validar Token - BossDV</title>
@@ -50,7 +49,7 @@
             max-width: 350px;
             word-break: break-all;
             font-family: monospace;
-            text-align: center; /* Centraliza o texto de saída */
+            text-align: center;
         }
         footer {
             margin-top: auto;
@@ -58,7 +57,6 @@
             color: #555;
             user-select: none;
         }
-        /* Estilos para a seção de token salvo */
         #savedTokenSection {
             margin-top: 20px;
             background: #2c2c2c;
@@ -68,15 +66,16 @@
             max-width: 350px;
             text-align: center;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            display: none; /* Escondido por padrão */
+            display: none;
             flex-direction: column;
             gap: 15px;
+            transition: all 0.5s ease;
         }
         #savedTokenSection p {
             margin-bottom: 0;
         }
         #goToBossSearchButton {
-            background-color: #2196f3; /* Azul para o botão de ir para pesquisa */
+            background-color: #2196f3;
             color: white;
             margin-top: 10px;
         }
@@ -84,187 +83,175 @@
             background-color: #1976d2;
         }
         #clearTokenButton {
-            background-color: #f44336; /* Vermelho para limpar token */
+            background-color: #f44336;
             color: white;
             margin-top: 5px;
         }
         #clearTokenButton:hover {
             background-color: #d32f2f;
         }
+        .loading {
+            color: yellow;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .success {
+            color: #4caf50;
+            font-weight: bold;
+        }
     </style>
 </head>
-<body>
+<body><h1>Validar Token - BossDV</h1>
 
-    <h1>Validar Token - BossDV</h1>
+<div id="tokenInputSection">
+    <label for="token">Digite o token:</label>
+    <input type="text" id="token" placeholder="ex: abc123-..."/>
+    <button id="validateButton" onclick="validarToken()">Validar Token</button>
+</div>
 
-    <div id="tokenInputSection">
-        <label for="token">Digite o token:</label>
-        <input type="text" id="token" placeholder="ex: abc123-..."/>
-        <button onclick="validarToken()">Validar Token</button>
-    </div>
+<div id="savedTokenSection">
+    <p id="savedTokenMessage"></p>
+    <button id="goToBossSearchButton" onclick="redirectToBossSearch()">Ir para Pesquisa de Boss</button>
+    <button id="clearTokenButton" onclick="clearSavedToken()">Limpar Token</button>
+</div>
 
-    <div id="savedTokenSection">
-        <p id="savedTokenMessage"></p>
-        <button id="goToBossSearchButton" onclick="redirectToBossSearch()">Ir para Pesquisa de Boss</button>
-        <button id="clearTokenButton" onclick="clearSavedToken()">Limpar Token</button>
-    </div>
+<div id="output"></div>
 
-    <div id="output"></div>
+<footer>Desenvolvido por Kronah © 2025</footer>
 
-    <footer>Desenvolvido por Kronah © 2025</footer>
+<script>
+    const firebaseBase = "https://bossdv-72d16-default-rtdb.firebaseio.com/tokens"; 
 
-    <script>
-        const firebaseBase = "https://bossdv-72d16-default-rtdb.firebaseio.com/tokens"; 
+    function formatarData(data) {
+        return new Intl.DateTimeFormat('pt-BR').format(new Date(data));
+    }
 
-        function formatarData(data) {
-            return new Intl.DateTimeFormat('pt-BR').format(new Date(data));
+    function generateUUID() {
+        return crypto.randomUUID();
+    }
+
+    function getOrCreateLocalDeviceId() {
+        let localDeviceId = localStorage.getItem('localDeviceId');
+        if (!localDeviceId) {
+            localDeviceId = generateUUID();
+            localStorage.setItem('localDeviceId', localDeviceId);
+        }
+        return localDeviceId;
+    }
+
+    async function validarToken(tokenToValidate = null, autoValidate = false) {
+        const tokenInput = document.getElementById('token');
+        const output = document.getElementById('output');
+        const validateButton = document.getElementById('validateButton');
+        const token = tokenToValidate || tokenInput.value.trim();
+        const currentLocalDeviceId = getOrCreateLocalDeviceId();
+
+        output.className = 'loading';
+        output.innerText = "🔄 Validando token...";
+        validateButton.disabled = true;
+
+        if (!token) {
+            output.className = 'error';
+            output.innerText = "Erro: Digite um token.";
+            validateButton.disabled = false;
+            return;
         }
 
-        function generateUUID() {
-            return crypto.randomUUID();
-        }
+        try {
+            const url = `${firebaseBase}/${token}.json`;
+            const res = await fetch(url);
 
-        function getOrCreateLocalDeviceId() {
-            let localDeviceId = localStorage.getItem('localDeviceId');
-            if (!localDeviceId) {
-                localDeviceId = generateUUID();
-                localStorage.setItem('localDeviceId', localDeviceId);
-            }
-            return localDeviceId;
-        }
+            if (!res.ok) throw new Error("Erro ao acessar o Firebase.");
 
-        // Função principal de validação do token
-        async function validarToken(tokenToValidate = null, autoValidate = false) {
-            const tokenInput = document.getElementById('token');
-            const output = document.getElementById('output');
-            const token = tokenToValidate || tokenInput.value.trim();
-            const currentLocalDeviceId = getOrCreateLocalDeviceId();
-
-            output.innerText = ""; 
-
-            if (!token) {
-                output.innerText = "Erro: Digite um token.";
+            const data = await res.json();
+            if (!data || !data.valid) {
+                output.className = 'error';
+                output.innerText = "❌ Token inválido ou desativado.";
+                if (autoValidate) clearSavedToken(false);
+                validateButton.disabled = false;
                 return;
             }
 
-            try {
-                const url = `${firebaseBase}/${token}.json`;
-                const res = await fetch(url);
-
-                if (!res.ok) {
-                    throw new Error("Erro ao acessar o Firebase. Verifique sua conexão ou a URL.");
-                }
-
-                const data = await res.json();
-
-                if (!data || !data.valid) {
-                    output.innerText = "❌ Token inválido ou desativado.";
-                    if (autoValidate) clearSavedToken(false); // Limpa se for auto-validação falha
-                    return;
-                }
-
-                const hoje = new Date();
-                const expiraEm = new Date(data.expire_at);
-                if (hoje > expiraEm) {
-                    output.innerText = "❌ Token expirado. Data de validade: " + formatarData(data.expire_at);
-                    if (autoValidate) clearSavedToken(false); // Limpa se for auto-validação falha
-                    return;
-                }
-
-                let firebaseDeviceId = data.device_id || '';
-
-                if (!firebaseDeviceId || firebaseDeviceId === "") {
-                    const updateRes = await fetch(url, {
-                        method: 'PATCH',
-                        body: JSON.stringify({ device_id: currentLocalDeviceId }),
-                        headers: { 'Content-Type': 'application/json' }
-                    });
-
-                    if (!updateRes.ok) {
-                        console.warn("Aviso: Não foi possível registrar o device_id no Firebase.");
-                    } else {
-                        firebaseDeviceId = currentLocalDeviceId;
-                        console.log(`Device ID ${currentLocalDeviceId} registrado para o token ${token}`);
-                    }
-                } else {
-                    if (firebaseDeviceId !== currentLocalDeviceId) {
-                        output.innerHTML = `❌ Token já está em uso em outro dispositivo.<br>Device ID registrado: ${firebaseDeviceId}`;
-                        if (autoValidate) clearSavedToken(false); // Limpa se for auto-validação falha
-                        return;
-                    }
-                }
-
-                // Tudo ok! Acesso liberado!
-                output.innerHTML =
-                    `✅ Acesso liberado!<br><br>` +
-                    `Nome: ${data.nome}<br>` +
-                    `Válido até: ${formatarData(data.expire_at)}<br>` +
-                    `Device ID: ${firebaseDeviceId || 'Não Registrado'}<br><br>`;
-                
-                // Salva o token no localStorage apenas se a validação foi manual ou se não estava salvo
-                if (!autoValidate || !localStorage.getItem('savedToken')) {
-                    localStorage.setItem('savedToken', token);
-                }
-                localStorage.setItem('validatedUserName', data.nome);
-                localStorage.setItem('validatedTokenId', token);
-                localStorage.setItem('validatedDeviceId', firebaseDeviceId || '');
-
-                // Esconde a seção de input e mostra a seção de token salvo
-                document.getElementById('tokenInputSection').style.display = 'none';
-                document.getElementById('savedTokenSection').style.display = 'flex';
-                document.getElementById('savedTokenMessage').innerHTML = 
-                    `Acesso validado para **${data.nome}**.<br>Válido até: ${formatarData(data.expire_at)}`;
-
-                // Redireciona automaticamente após um tempo se for auto-validação
-                if (autoValidate) {
-                    output.innerHTML += `Redirecionando para a tela de pesquisa...`;
-                    setTimeout(redirectToBossSearch, 2000);
-                } else {
-                    // Se for validação manual, dá a opção de ir para a pesquisa
-                    output.innerHTML += `Clique no botão abaixo para ir para a pesquisa.`;
-                }
-
-            } catch (e) {
-                console.error("Erro:", e);
-                output.innerText = "Erro ao validar token: " + e.message;
-                if (autoValidate) clearSavedToken(false); // Limpa se for auto-validação falha
+            const hoje = new Date();
+            const expiraEm = new Date(data.expire_at);
+            if (hoje > expiraEm) {
+                output.className = 'error';
+                output.innerText = `❌ Token expirado. Válido até: ${formatarData(data.expire_at)}`;
+                if (autoValidate) clearSavedToken(false);
+                validateButton.disabled = false;
+                return;
             }
-        }
 
-        // Função para redirecionar para a tela de pesquisa de Boss
-        function redirectToBossSearch() {
-            window.location.href = "boss_search.html"; // Altere para o caminho real
-        }
-
-        // Função para limpar o token salvo e recarregar a página
-        function clearSavedToken(reloadPage = true) {
-            localStorage.removeItem('savedToken');
-            localStorage.removeItem('validatedUserName');
-            localStorage.removeItem('validatedTokenId');
-            localStorage.removeItem('validatedDeviceId');
-            if (reloadPage) {
-                window.location.reload();
-            } else {
-                // Se não recarregar, apenas reseta a UI para o estado inicial
-                document.getElementById('tokenInputSection').style.display = 'flex';
-                document.getElementById('savedTokenSection').style.display = 'none';
-                document.getElementById('output').innerText = "";
-                document.getElementById('token').value = "";
+            let firebaseDeviceId = data.device_id || '';
+            if (!firebaseDeviceId) {
+                const updateRes = await fetch(url, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ device_id: currentLocalDeviceId }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                firebaseDeviceId = currentLocalDeviceId;
+            } else if (firebaseDeviceId !== currentLocalDeviceId) {
+                output.className = 'error';
+                output.innerHTML = `❌ Token em uso em outro dispositivo.<br>ID: ${firebaseDeviceId}`;
+                if (autoValidate) clearSavedToken(false);
+                validateButton.disabled = false;
+                return;
             }
-        }
 
-        // Executa a validação automática ao carregar a página
-        window.onload = () => {
-            const savedToken = localStorage.getItem('savedToken');
-            if (savedToken) {
-                validarToken(savedToken, true); // Tenta validar automaticamente
-            } else {
-                // Se não há token salvo, garante que a seção de input esteja visível
-                document.getElementById('tokenInputSection').style.display = 'flex';
-                document.getElementById('savedTokenSection').style.display = 'none';
+            output.className = 'success';
+            output.innerHTML =
+                `✅ Acesso liberado!<br>Nome: ${data.nome}<br>Válido até: ${formatarData(data.expire_at)}<br>Device ID: ${firebaseDeviceId}`;
+
+            if (!autoValidate || !localStorage.getItem('savedToken')) {
+                localStorage.setItem('savedToken', token);
             }
-        };
-    </script>
+            localStorage.setItem('validatedUserName', data.nome);
+            localStorage.setItem('validatedTokenId', token);
+            localStorage.setItem('validatedDeviceId', firebaseDeviceId);
+
+            document.getElementById('tokenInputSection').style.display = 'none';
+            document.getElementById('savedTokenSection').style.display = 'flex';
+            document.getElementById('savedTokenMessage').innerHTML = `Acesso validado para <strong>${data.nome}</strong>. Válido até: ${formatarData(data.expire_at)}`;
+
+            if (autoValidate) {
+                setTimeout(redirectToBossSearch, 2000);
+            }
+
+        } catch (e) {
+            output.className = 'error';
+            output.innerText = "Erro ao validar: " + e.message;
+            if (autoValidate) clearSavedToken(false);
+        } finally {
+            validateButton.disabled = false;
+        }
+    }
+
+    function redirectToBossSearch() {
+        window.location.href = "boss_search.html";
+    }
+
+    function clearSavedToken(reloadPage = true) {
+        localStorage.clear();
+        if (reloadPage) {
+            window.location.reload();
+        } else {
+            document.getElementById('tokenInputSection').style.display = 'flex';
+            document.getElementById('savedTokenSection').style.display = 'none';
+            document.getElementById('output').innerText = "";
+            document.getElementById('token').value = "";
+        }
+    }
+
+    window.onload = () => {
+        const savedToken = localStorage.getItem('savedToken');
+        if (savedToken) {
+            validarToken(savedToken, true);
+        }
+    };
+</script>
 
 </body>
 </html>
