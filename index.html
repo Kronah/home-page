@@ -98,7 +98,7 @@
 
     <div id="tokenInputSection">
         <label for="token">Digite o token:</label>
-        <input type="text" id="token" placeholder="ex: abc123-..."/>
+        <input type="text" id="token" placeholder="ex: abc123-..." />
         <button onclick="validarToken()">Validar Token</button>
     </div>
 
@@ -119,14 +119,10 @@
             return new Intl.DateTimeFormat('pt-BR').format(new Date(data));
         }
 
-        function generateUUID() {
-            return crypto.randomUUID();
-        }
-
         function getOrCreateLocalDeviceId() {
             let localDeviceId = localStorage.getItem('localDeviceId');
             if (!localDeviceId) {
-                localDeviceId = generateUUID();
+                localDeviceId = crypto.randomUUID();
                 localStorage.setItem('localDeviceId', localDeviceId);
             }
             return localDeviceId;
@@ -139,6 +135,7 @@
             const currentLocalDeviceId = getOrCreateLocalDeviceId();
 
             output.innerText = "";
+            console.log("Validando token:", token);
 
             if (!token) {
                 output.innerText = "Erro: Digite um token.";
@@ -147,16 +144,23 @@
 
             try {
                 const url = `${firebaseBase}/${token}.json`;
+                console.log("Buscando URL:", url);
                 const res = await fetch(url);
 
                 if (!res.ok) {
-                    throw new Error("Erro ao acessar o Firebase. Verifique sua conexão ou a URL.");
+                    throw new Error("Erro na requisição Firebase");
                 }
 
                 const data = await res.json();
+                console.log("Dados recebidos:", data);
 
-                // Verificação atualizada para campo valid
-                if (!data || typeof data.valid === 'undefined' || !data.valid) {
+                if (!data) {
+                    output.innerText = "❌ Token não encontrado.";
+                    if (autoValidate) clearSavedToken(false);
+                    return;
+                }
+
+                if (!data.valid) {
                     output.innerText = "❌ Token inválido ou desativado.";
                     if (autoValidate) clearSavedToken(false);
                     return;
@@ -164,19 +168,20 @@
 
                 const hoje = new Date();
                 const expiraEm = new Date(data.expire_at);
+
                 if (hoje > expiraEm) {
                     output.innerText = "❌ Token expirado. Data de validade: " + formatarData(data.expire_at);
                     if (autoValidate) clearSavedToken(false);
                     return;
                 }
 
-                let firebaseDeviceId = data.device_id || '';
+                let firebaseDeviceId = data.device_id || "";
 
-                if (!firebaseDeviceId || firebaseDeviceId === "") {
+                if (!firebaseDeviceId) {
                     const updateRes = await fetch(url, {
-                        method: 'PATCH',
+                        method: "PATCH",
                         body: JSON.stringify({ device_id: currentLocalDeviceId }),
-                        headers: { 'Content-Type': 'application/json' }
+                        headers: { "Content-Type": "application/json" },
                     });
 
                     if (!updateRes.ok) {
@@ -185,31 +190,29 @@
                         firebaseDeviceId = currentLocalDeviceId;
                         console.log(`Device ID ${currentLocalDeviceId} registrado para o token ${token}`);
                     }
-                } else {
-                    if (firebaseDeviceId !== currentLocalDeviceId) {
-                        output.innerHTML = `❌ Token já está em uso em outro dispositivo.<br>Device ID registrado: ${firebaseDeviceId}`;
-                        if (autoValidate) clearSavedToken(false);
-                        return;
-                    }
+                } else if (firebaseDeviceId !== currentLocalDeviceId) {
+                    output.innerHTML = `❌ Token já está em uso em outro dispositivo.<br>Device ID registrado: ${firebaseDeviceId}`;
+                    if (autoValidate) clearSavedToken(false);
+                    return;
                 }
 
                 output.innerHTML =
                     `✅ Acesso liberado!<br><br>` +
                     `Nome: ${data.nome}<br>` +
                     `Válido até: ${formatarData(data.expire_at)}<br>` +
-                    `Device ID: ${firebaseDeviceId || 'Não Registrado'}<br><br>`;
+                    `Device ID: ${firebaseDeviceId || "Não Registrado"}<br><br>`;
 
-                if (!autoValidate || !localStorage.getItem('savedToken')) {
-                    localStorage.setItem('savedToken', token);
+                if (!autoValidate || !localStorage.getItem("savedToken")) {
+                    localStorage.setItem("savedToken", token);
                 }
-                localStorage.setItem('validatedUserName', data.nome);
-                localStorage.setItem('validatedTokenId', token);
-                localStorage.setItem('validatedDeviceId', firebaseDeviceId || '');
+                localStorage.setItem("validatedUserName", data.nome);
+                localStorage.setItem("validatedTokenId", token);
+                localStorage.setItem("validatedDeviceId", firebaseDeviceId || "");
 
-                document.getElementById('tokenInputSection').style.display = 'none';
-                document.getElementById('savedTokenSection').style.display = 'flex';
-                document.getElementById('savedTokenMessage').innerHTML =
-                    `Acesso validado para **${data.nome}**.<br>Válido até: ${formatarData(data.expire_at)}`;
+                document.getElementById("tokenInputSection").style.display = "none";
+                document.getElementById("savedTokenSection").style.display = "flex";
+                document.getElementById("savedTokenMessage").innerHTML =
+                    `Acesso validado para <strong>${data.nome}</strong>.<br>Válido até: ${formatarData(data.expire_at)}`;
 
                 if (autoValidate) {
                     output.innerHTML += `Redirecionando para a tela de pesquisa...`;
@@ -217,40 +220,39 @@
                 } else {
                     output.innerHTML += `Clique no botão abaixo para ir para a pesquisa.`;
                 }
-
             } catch (e) {
-                console.error("Erro:", e);
-                output.innerText = "Erro ao validar token: " + e.message;
+                console.error(e);
+                output.innerText = "Erro: " + e.message;
                 if (autoValidate) clearSavedToken(false);
             }
         }
 
         function redirectToBossSearch() {
-            window.location.href = "boss_search.html";
+            window.location.href = "boss_search.html"; // Atualize o caminho conforme necessário
         }
 
         function clearSavedToken(reloadPage = true) {
-            localStorage.removeItem('savedToken');
-            localStorage.removeItem('validatedUserName');
-            localStorage.removeItem('validatedTokenId');
-            localStorage.removeItem('validatedDeviceId');
+            localStorage.removeItem("savedToken");
+            localStorage.removeItem("validatedUserName");
+            localStorage.removeItem("validatedTokenId");
+            localStorage.removeItem("validatedDeviceId");
             if (reloadPage) {
                 window.location.reload();
             } else {
-                document.getElementById('tokenInputSection').style.display = 'flex';
-                document.getElementById('savedTokenSection').style.display = 'none';
-                document.getElementById('output').innerText = "";
-                document.getElementById('token').value = "";
+                document.getElementById("tokenInputSection").style.display = "flex";
+                document.getElementById("savedTokenSection").style.display = "none";
+                document.getElementById("output").innerText = "";
+                document.getElementById("token").value = "";
             }
         }
 
         window.onload = () => {
-            const savedToken = localStorage.getItem('savedToken');
+            const savedToken = localStorage.getItem("savedToken");
             if (savedToken) {
                 validarToken(savedToken, true);
             } else {
-                document.getElementById('tokenInputSection').style.display = 'flex';
-                document.getElementById('savedTokenSection').style.display = 'none';
+                document.getElementById("tokenInputSection").style.display = "flex";
+                document.getElementById("savedTokenSection").style.display = "none";
             }
         };
     </script>
