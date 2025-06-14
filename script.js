@@ -1,53 +1,36 @@
-const MOB_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/refs/heads/main/dados.json';
+// Configuração do seu projeto Firebase (SUBSTITUA COM AS SUAS INFORMAÇÕES!)
+// Você pode obter isso no Console do Firebase > Configurações do Projeto > Seus apps > Web
+const firebaseConfig = {
+    apiKey: "SUA_API_KEY",
+    authDomain: "SEU_AUTH_DOMAIN",
+    projectId: "SEU_PROJECT_ID",
+    storageBucket: "SEU_STORAGE_BUCKET",
+    messagingSenderId: "SEU_MESSAGING_SENDER_ID",
+    appId: "SEU_APP_ID"
+    // Adicione mais chaves se tiver (ex: measurementId)
+};
+
+// Inicializa o Firebase
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore(); // Instância do Firestore
+
+// Variáveis que serão preenchidas pela configuração do cliente
+let MOB_DATA_URL = ''; // Agora é 'let' porque será definido dinamicamente
+let currentThemeName = 'green'; // Tema padrão inicial
+
 let allMobsData = [];
 let selectedMobs = [];
 
 // Definição dos temas com suas variáveis de cor
 const themes = {
     'green': {
-        '--bg-color': '#1A1A2E',
-        '--card-color': '#2C2C40',
-        '--primary-color': '#6BE570',
-        '--accent-color': '#4CAF50',
-        '--text-light-color': '#E0E0E0',
-        '--text-muted-color': '#A0A0A0',
-        '--border-color': '#444455',
-        '--add-btn-color': '#28a745',
-        '--remove-btn-color': '#dc3545',
-        '--error-color': '#D32F2F',
-        '--success-color': '#4CAF50',
-        '--primary-color-rgb': '107, 229, 112', // RGB para sombras dinâmicas
-        '--accent-color-rgb': '76, 175, 80',
+        '--bg-color': '#1A1A2E', '--card-color': '#2C2C40', '--primary-color': '#6BE570', '--accent-color': '#4CAF50', '--text-light-color': '#E0E0E0', '--text-muted-color': '#A0A0A0', '--border-color': '#444455', '--add-btn-color': '#28a745', '--remove-btn-color': '#dc3545', '--error-color': '#D32F2F', '--success-color': '#4CAF50', '--primary-color-rgb': '107, 229, 112', '--accent-color-rgb': '76, 175, 80',
     },
     'blue': {
-        '--bg-color': '#1A2A3E',
-        '--card-color': '#2C3A4E',
-        '--primary-color': '#4FC3F7',
-        '--accent-color': '#2196F3',
-        '--text-light-color': '#E0E0E0',
-        '--text-muted-color': '#A0A0A0',
-        '--border-color': '#3A4A5A',
-        '--add-btn-color': '#1E88E5',
-        '--remove-btn-color': '#dc3545',
-        '--error-color': '#D32F2F',
-        '--success-color': '#4CAF50',
-        '--primary-color-rgb': '79, 195, 247',
-        '--accent-color-rgb': '33, 150, 243',
+        '--bg-color': '#1A2A3E', '--card-color': '#2C3A4E', '--primary-color': '#4FC3F7', '--accent-color': '#2196F3', '--text-light-color': '#E0E0E0', '--text-muted-color': '#A0A0A0', '--border-color': '#3A4A5A', '--add-btn-color': '#1E88E5', '--remove-btn-color': '#dc3545', '--error-color': '#D32F2F', '--success-color': '#4CAF50', '--primary-color-rgb': '79, 195, 247', '--accent-color-rgb': '33, 150, 243',
     },
     'purple': {
-        '--bg-color': '#2E1A3E',
-        '--card-color': '#402C4E',
-        '--primary-color': '#BB86FC',
-        '--accent-color': '#9C27B0',
-        '--text-light-color': '#E0E0E0',
-        '--text-muted-color': '#A0A0A0',
-        '--border-color': '#554455',
-        '--add-btn-color': '#673AB7',
-        '--remove-btn-color': '#dc3545',
-        '--error-color': '#D32F2F',
-        '--success-color': '#4CAF50',
-        '--primary-color-rgb': '187, 134, 252',
-        '--accent-color-rgb': '156, 39, 176',
+        '--bg-color': '#2E1A3E', '--card-color': '#402C4E', '--primary-color': '#BB86FC', '--accent-color': '#9C27B0', '--text-light-color': '#E0E0E0', '--text-muted-color': '#A0A0A0', '--border-color': '#554455', '--add-btn-color': '#673AB7', '--remove-btn-color': '#dc3545', '--error-color': '#D32F2F', '--success-color': '#4CAF50', '--primary-color-rgb': '187, 134, 252', '--accent-color-rgb': '156, 39, 176',
     }
 };
 
@@ -59,6 +42,7 @@ function setTheme(themeName) {
             document.documentElement.style.setProperty(key, value);
         }
         localStorage.setItem('currentTheme', themeName);
+        currentThemeName = themeName;
         console.log(`Tema '${themeName}' aplicado.`);
     } else {
         console.warn(`Tema '${themeName}' não encontrado.`);
@@ -70,26 +54,24 @@ function mostrarToast(mensagem, tipo = "success") {
     const toast = document.getElementById("toast");
     if (toast) {
         toast.className = "show";
-        toast.className = `show ${tipo}`;
         toast.innerText = mensagem;
 
         // Resetar as cores do toast para o tema atual antes de aplicar a cor de tipo
-        toast.style.backgroundColor = themes[localStorage.getItem('currentTheme') || 'green']['--card-color'];
-        toast.style.color = themes[localStorage.getItem('currentTheme') || 'green']['--text-light-color'];
+        toast.style.backgroundColor = themes[currentThemeName]['--card-color'];
+        toast.style.color = themes[currentThemeName]['--text-light-color'];
 
 
         if (tipo === "error") {
-            toast.style.backgroundColor = themes.green['--error-color']; // Usa cor fixa de erro
+            toast.style.backgroundColor = themes.green['--error-color'];
         } else if (tipo === "success") {
-            toast.style.backgroundColor = themes.green['--success-color']; // Usa cor fixa de sucesso
+            toast.style.backgroundColor = themes.green['--success-color'];
         } else if (tipo === "info") {
-            toast.style.backgroundColor = themes[localStorage.getItem('currentTheme') || 'green']['--accent-color']; // Usa cor de acento do tema
+            toast.style.backgroundColor = themes[currentThemeName]['--accent-color'];
         }
 
         setTimeout(() => {
             toast.className = toast.className.replace("show", "");
-            // Opcional: Resetar o background do toast para a cor padrão do card após sumir
-            toast.style.backgroundColor = themes[localStorage.getItem('currentTheme') || 'green']['--card-color'];
+            toast.style.backgroundColor = themes[currentThemeName]['--card-color'];
         }, 3000);
     } else {
         console.warn("Elemento Toast não encontrado. Mensagem:", mensagem);
@@ -100,6 +82,49 @@ function mostrarToast(mensagem, tipo = "success") {
         }
     }
 }
+
+// NOVA FUNÇÃO: Carrega a configuração específica do cliente do Firestore
+async function loadClientConfig() {
+    const urlParams = new URLSearchParams(window.location.search);
+    let clientId = urlParams.get('clientId');
+
+    if (!clientId) {
+        // Se não houver clientId na URL, tenta pegar do localStorage (se salvo de uma sessão anterior)
+        clientId = localStorage.getItem('currentClientId');
+        if (!clientId) {
+            console.error("Erro: clientId não encontrado na URL nem no localStorage. Usando 'defaultClient' como fallback.");
+            clientId = 'defaultClient'; // Fallback para um cliente padrão
+        }
+    } else {
+        localStorage.setItem('currentClientId', clientId); // Salva o clientId para futuras sessões
+    }
+
+    try {
+        console.log(`Tentando carregar configuração para clientId: ${clientId} do Firestore.`);
+        const docRef = db.collection("clientConfigs").doc(clientId);
+        const docSnap = await docRef.get();
+
+        if (docSnap.exists) {
+            const config = docSnap.data();
+            MOB_DATA_URL = config.mobDataUrl || 'https://raw.githubusercontent.com/Kronah/mob-data/refs/heads/main/dados.json'; // Fallback
+            setTheme(config.theme || 'green'); // Fallback
+            console.log(`Configuração para cliente '${clientId}' carregada do Firestore:`, config);
+            mostrarToast(`Configuração para ${config.appName || clientId} carregada!`, "success");
+        } else {
+            console.warn(`Documento de configuração para clientId '${clientId}' não encontrado no Firestore. Usando configurações padrão.`);
+            MOB_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/refs/heads/main/dados.json';
+            setTheme('green');
+            mostrarToast(`Configuração para '${clientId}' não encontrada. Usando padrão.`, "info");
+        }
+    } catch (error) {
+        console.error("Erro ao carregar configuração do cliente do Firestore:", error);
+        mostrarToast(`Erro ao carregar configuração: ${error.message}. Verifique o console. Usando padrão.`, "error");
+        // Fallback para configurações padrão em caso de erro
+        MOB_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/refs/heads/main/dados.json';
+        setTheme('green');
+    }
+}
+
 
 // Função para carregar os dados dos mobs do GitHub
 async function loadMobsData() {
@@ -120,7 +145,7 @@ async function loadMobsData() {
         console.log("Resposta da requisição para dados.json:", response);
 
         if (!response.ok) {
-            throw new Error(`Erro HTTP ao carregar dados: ${response.status} ${response.statusText}`);
+            throw new Error(`Erro HTTP ao carregar dados: ${response.status} ${res.statusText}`);
         }
         
         allMobsData = await response.json();
@@ -347,10 +372,12 @@ async function buscarMob(initialTerm = null) {
     }
 }
 
-// Ao carregar a página, carrega o tema salvo, os dados dos mobs e a lista de selecionados
+
+// Ao carregar a página, carrega a configuração do cliente, os dados dos mobs e a lista de selecionados
 window.onload = async () => {
-    const savedTheme = localStorage.getItem('currentTheme') || 'green'; // Pega o tema salvo ou usa 'green'
-    setTheme(savedTheme); // Aplica o tema ao carregar
+    // Carrega a configuração do cliente ANTES de tudo
+    await loadClientConfig(); 
+
     loadSelectedMobs(); 
     await loadMobsData(); 
 };
