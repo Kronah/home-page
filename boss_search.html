@@ -8,6 +8,19 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
+    <script>
+        // Função para verificar o token na URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+
+        // Token esperado
+        const expectedToken = 'SEU_TOKEN_AQUI';  // Substitua com o seu token real
+
+        if (token !== expectedToken) {
+            window.location.href = 'index.html';  // Redireciona para outra página caso o token seja inválido
+        }
+    </script>
+
     <button id="openListButton" onclick="openSelectedMobsListPopup()">
         <i class="fas fa-clipboard-list"></i> Minha Lista (<span id="selectedMobCount">0</span>)
     </button>
